@@ -2,6 +2,7 @@
 
 import pandas as pd
 import sqlite3
+import matplotlib.pyplot as plt
 
 #Carregando os dados
 df = pd.read_csv('rota1.csv', sep = ';')
@@ -34,9 +35,46 @@ GROUP BY rota
 ORDER BY ticket_medio DESC;
 
 """
+query_bairro = """
+SELECT 
+    bairro, 
+    SUM(taxa) AS faturamento_total
+FROM entregas
+GROUP BY bairro
+ORDER BY faturamento_total DESC;
+"""
 
 ranking = pd.read_sql(query, conn)
+ranking_bairro = pd.read_sql(query_bairro, conn)
 
 conn.close()
-print("\n--- RESULTADO DA ANÁLISE ---")
-print(ranking)
+
+# Criando o gráfico
+ranking.plot(kind='bar', x='rota', y='faturamento_total', color='skyblue')
+
+plt.title('Faturamento Total por Rota')
+plt.xlabel('Rotas')
+plt.ylabel('R$ Faturado')
+plt.xticks(rotation=45) # Inclina os nomes para não amontoar
+plt.tight_layout()
+
+# Salva o gráfico como uma imagem para você subir no GitHub!
+plt.savefig('faturamento_rotas.png')
+
+
+# Configura o tamanho da imagem
+plt.figure(figsize=(10, 6))
+
+# Cria o gráfico de barras horizontais
+plt.barh(ranking_bairro['bairro'], ranking_bairro['faturamento_total'], color='teal')
+
+# Perfumaria (Títulos e Legendas)
+plt.xlabel('Faturamento Total (R$)')
+plt.ylabel('Bairros')
+plt.title('Bairros mais Lucrativos - Logística Pessoal')
+plt.gca().invert_yaxis()  # Deixa o maior faturamento no topo
+plt.tight_layout()
+
+# Salva e mostra
+plt.savefig('faturamento_por_bairro.png')
+plt.show()
