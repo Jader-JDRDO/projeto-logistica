@@ -1,80 +1,77 @@
 #filtragem de relatorio de entregas
 
-import pandas as pd
-import sqlite3
-import matplotlib.pyplot as plt
+import pandas as pd #importando biblioteca pandas para ler o arquivo csv
+import sqlite3 #importando a conexao sql para criar um banco de dados
+import matplotlib.pyplot as plt #importando a biblioteca matplot para exibir relatorios em forma de grafico 
 
 #Carregando os dados
-df = pd.read_csv('rota1.csv', sep = ';')
-print(df)
+df = pd.read_csv('rota1.csv', sep = ';') #lendo o arquivo csv e transformando em data frame
+ #exibindo o data frame
 
 # 2. Limpeza (O que você aprendeu no quiz!)
 df.columns = df.columns.str.strip().str.lower()
+df.columns = df.columns.str.replace(' ', '_')
 print(df.columns) #exibindo colunas para garantir a formataçao
 df['taxa'] = df['taxa'].str.replace('R$', '', regex=False).str.replace(',', '.') #tirando o R$ para o python ler como numero
 df['taxa'] = pd.to_numeric(df['taxa'], errors='coerce') # Garantindo que é formato float
 df = df.dropna(subset=['taxa']) # Removendo entregas sem valor registrado
-df['bairro'] = df['bairro'].str.strip().str.upper() # Padronizando os nomes das rotas
+df['bairro'] = df['bairro'].str.strip().str.lower() # Padronizando os nomes das rotas por garantia
+df['bairro'] = df['bairro'].str.title() #aqui deixa a primeira letra maiuscula da palavra padronizado para todos
 
+coleta_dt =  pd.to_datetime(df['pedido_coletado'],format='%H:%M')
+entrega_dt = pd.to_datetime(df['pedido_entregue'],format ='%H:%M')
+
+diferenca = entrega_dt - coleta_dt
+df['tempo_entrega(min)'] = diferenca.dt.total_seconds() / 60
+df['pedido_coletado'] = coleta_dt.dt.strftime('%H:%M')
+df['pedido_entregue'] = entrega_dt.dt.strftime('%H:%M')
+
+# 4. Remove erros (entregas negativas)
+df = df[df['tempo_entrega(min)'] > 0]
 print("Dados limpos e prontos!")
 
-#conn = sqlite3.connect('logistica_pessoal.db') aqui deu problema com a leitura de pastas do windows logo tive que pegar o diretorio completo
+print(df)
+
+
+
+conn = sqlite3.connect('logistica_pessoal.db') #aqui deu problema com a leitura de pastas do windows logo tive que pegar o diretorio direto
 # O 'r' antes das aspas ajuda o Python a ler as barras do Windows
-conn = sqlite3.connect(r'C:\Users\Jader\Documents\logistica_pessoal.db')
-df.to_sql('entregas', conn, if_exists='replace', index=False) #aqui eu digo que a tabela entregas existe e é baseada no banco de dados
+#conn = sqlite3.connect(r'C:\Users\Jader\Documents\logistica_pessoal.db')
+df.to_sql('entregas', conn, if_exists='replace', index=False) #aqui eu digo que a tabela entregas existe e que se existe refazer
 
-# Query para saber qual rota é a mais lucrativa (R$)
-query = """
-SELECT 
-    rota, 
-    COUNT(*) AS total_entregas,
-    SUM(taxa) AS faturamento_total,
-    AVG(taxa) AS ticket_medio
-FROM entregas
-GROUP BY rota
-ORDER BY ticket_medio DESC;
-
-"""
-query_bairro = """
-SELECT 
-    bairro, 
-    SUM(taxa) AS faturamento_total
-FROM entregas
-GROUP BY bairro
-ORDER BY faturamento_total DESC;
+query_top_dia = """
+SELECT data_entregas, bairro, MAX(lucro_total) as lucro_maximo
+FROM (
+    SELECT data_entregas, bairro, SUM(taxa) AS lucro_total
+    FROM entregas
+    GROUP BY data_entregas, bairro
+)
+GROUP BY data_entregas;
 """
 
-ranking = pd.read_sql(query, conn)
-ranking_bairro = pd.read_sql(query_bairro, conn)
 
+
+
+
+# 1. Busca os dados do campeão de cada dia
+df_top = pd.read_sql(query_top_dia, conn)
 conn.close()
+# 2. Criando o gráfico
+plt.figure(figsize=(12, 6))
+bars = plt.bar(df_top['data_entregas'], df_top['lucro_maximo'], color='skyblue')
 
-# Criando o gráfico
-ranking.plot(kind='bar', x='rota', y='faturamento_total', color='skyblue')
+# 3. A MÁGICA: Colocar o nome do bairro em cima da barra
+for bar, bairro in zip(bars, df_top['bairro']):
+    yval = bar.get_height()
+    plt.text(bar.get_x() + bar.get_width()/2, yval + 0.2, bairro, 
+             ha='center', va='bottom', fontweight='bold', color='darkblue')
 
-plt.title('Faturamento Total por Rota')
-plt.xlabel('Rotas')
-plt.ylabel('R$ Faturado')
-plt.xticks(rotation=45) # Inclina os nomes para não amontoar
+# Perfumaria
+plt.title('Bairro Mais Lucrativo por Dia (Top Performance)', fontsize=14)
+plt.xlabel('Data')
+plt.ylabel('Lucro do Melhor Bairro (R$)')
+plt.xticks(rotation=45)
+plt.ylim(0, df_top['lucro_maximo'].max() + 5) # Dá um espaço no topo para o texto
 plt.tight_layout()
-
-# Salva o gráfico como uma imagem para você subir no GitHub!
-plt.savefig('faturamento_rotas.png')
-
-
-# Configura o tamanho da imagem
-plt.figure(figsize=(10, 6))
-
-# Cria o gráfico de barras horizontais
-plt.barh(ranking_bairro['bairro'], ranking_bairro['faturamento_total'], color='teal')
-
-# Perfumaria (Títulos e Legendas)
-plt.xlabel('Faturamento Total (R$)')
-plt.ylabel('Bairros')
-plt.title('Bairros mais Lucrativos - Logística Pessoal')
-plt.gca().invert_yaxis()  # Deixa o maior faturamento no topo
-plt.tight_layout()
-
-# Salva e mostra
-plt.savefig('faturamento_por_bairro.png')
+plt.savefig('lucro_bairro_por_dia.png')
 plt.show()
