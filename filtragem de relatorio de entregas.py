@@ -34,8 +34,7 @@ print(df)
 
 
 
-conn = sqlite3.connect('logistica_pessoal.db') #aqui deu problema com a leitura de pastas do windows logo tive que pegar o diretorio direto
-# O 'r' antes das aspas ajuda o Python a ler as barras do Windows
+conn = sqlite3.connect('logistica_pessoal.db') #conexao com o banco de dados
 #conn = sqlite3.connect(r'C:\Users\Jader\Documents\logistica_pessoal.db')
 df.to_sql('entregas', conn, if_exists='replace', index=False) #aqui eu digo que a tabela entregas existe e que se existe refazer
 
@@ -49,12 +48,20 @@ FROM (
 GROUP BY data_entregas;
 """
 
-
+query_volume_bairro = """
+SELECT 
+    bairro, 
+    COUNT(*) AS quantidade_entregas
+FROM entregas
+GROUP BY bairro
+ORDER BY quantidade_entregas DESC;
+"""
 
 
 
 # 1. Busca os dados do campeão de cada dia
 df_top = pd.read_sql(query_top_dia, conn)
+df_volume = pd.read_sql(query_volume_bairro, conn)
 conn.close()
 # 2. Criando o gráfico
 plt.figure(figsize=(12, 6))
@@ -74,4 +81,19 @@ plt.xticks(rotation=45)
 plt.ylim(0, df_top['lucro_maximo'].max() + 5) # Dá um espaço no topo para o texto
 plt.tight_layout()
 plt.savefig('lucro_bairro_por_dia.png')
+plt.show()
+
+
+
+
+# --- Gráfico de Quantidade de Entregas ---
+plt.figure(figsize=(10, 6))
+# Usando gráfico de barras horizontais (barh) para facilitar a leitura dos nomes
+plt.barh(df_volume['bairro'], df_volume['quantidade_entregas'], color='salmon')
+
+plt.title('Quantidade Total de Entregas por Bairro no MES', fontsize=14)
+plt.xlabel('Número de Entregas')
+plt.ylabel('Bairro')
+plt.tight_layout()
+plt.savefig('quantidade_entregas_bairro.png')
 plt.show()
