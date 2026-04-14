@@ -75,7 +75,7 @@ barras = plt.bar(df_top['data_entregas'], df_top['lucro_maximo'], color='skyblue
 for barra, bairro, qtd in zip(barras, df_top['bairro'], df_top['lucro_maximo']): #para cada barra, bairro e quantidade dentro do dicionario barras e de acordo com os dados do data frame, fazer:
     yvalor = barra.get_height() #o valor do eixo y sera o tamanho dos dados que foi pego da contagem de barra e tranformando em altura no grafico
     plt.text(barra.get_x() + barra.get_width()/2, yvalor + 0.5, #o texto que sera exibido na barra ao decorrer do eixo x e uma distancia de 0,5 da borda da barra
-             f'{bairro}\n({int(qtd)})', #textos que vao aparecer no em cima de cada bairra com seu respectivo dado filtrado do bairro e a quantidade em inteiros
+             f'{bairro}\n(R$ {int(qtd)},00)', #textos que vao aparecer no em cima de cada bairra com seu respectivo dado filtrado do bairro e a quantidade em inteiros
              ha='center', va='bottom', fontweight='bold', color='darkblue', fontsize=9) #formatacao do texto, centralizada, em cima da barra, negrito, cor azul e tamanho da fonte 9
 
 plt.title('Bairro Mais Lucrativo por Dia (Top Performance)', fontsize=14) #titulo do grafico com tamanho 14
