@@ -17,7 +17,7 @@ df['taxa'] = pd.to_numeric(df['taxa'], errors='coerce') # Garantindo que é form
 df = df.dropna(subset=['taxa']) # Removendo entregas sem valor registrado (0)
 df['bairro'] = df['bairro'].str.strip().str.lower() # Padronizando os nomes das rotas por garantia
 df['bairro'] = df['bairro'].str.title() #aqui deixa a primeira letra maiuscula da palavra padronizado para todos
-
+print(df)
 coleta_dt =  pd.to_datetime(df['pedido_coletado'],format='%H:%M')  #formatando a coluna pedido coletado para o tipo data
 entrega_dt = pd.to_datetime(df['pedido_entregue'],format ='%H:%M') #formatando a coluna pedido coletado para o tipo data
 
@@ -25,9 +25,11 @@ diferenca = entrega_dt - coleta_dt#calculo de tempo da coleta ate a entrega
 df['tempo_entrega(min)'] = diferenca.dt.total_seconds() / 60 #adicionando coluna tempo_entrega para exibir o tempo gasto da coleta ate a entrega formatado em minutos
 df['pedido_coletado'] = coleta_dt.dt.strftime('%H:%M') #padronizando a coluna pedido_coletado em hora e minuto
 df['pedido_entregue'] = entrega_dt.dt.strftime('%H:%M') #padronizando a coluna pedido_entregue em hora e minuto
-
+print(df)
 # Removendo erros (entregas negativas)
-df = df[df['tempo_entrega(min)'] > 0] #se no dataframe a entrega tiver tempo negativo ou igual a zero ela nao sera exibida, só as que tiverem mais doque 1 min de tempo entre a coleta e a entrega
+df = df[df['tempo_entrega(min)'] > 1] #se no dataframe a entrega tiver tempo negativo ou igual a zero ela nao sera exibida, só as que tiverem mais doque 1 min de tempo entre a coleta e a entrega
+print('bibibi')
+print(df)
 print("Dados limpos e prontos!")
 
 print(df) #exibindo o dataframe para ver os dados formatados e limpos
