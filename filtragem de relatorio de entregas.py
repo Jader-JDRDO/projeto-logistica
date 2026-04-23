@@ -5,11 +5,16 @@ import sqlite3 #importando a conexao sql para criar um banco de dados
 import matplotlib.pyplot as plt #importando a biblioteca matplot para exibir relatorios em forma de grafico 
 import seaborn as sns #biblioteca que deixa os graficos mais bonitos
 
-#Carregando os dados
-df = pd.read_csv('rota1.csv', sep = ';') #lendo o arquivo csv e transformando em data frame
- #exibindo o data frame
-print(df)
+try:
+    df = pd.read_csv('rota1.csv', sep=';')#lendo o arquivo csv e transformando em data frame
+    print(df) #exibindo o data frame
+except FileNotFoundError: #erro de arquivo nao encontrado
+    print("Erro: O arquivo 'rota1.csv' não foi encontrado!")
+    exit() # encerra o script
+except Exception as excecao: #erro de excecao
+    print(f"Ocorreu um erro inesperado ao ler o arquivo: {excecao}")
 
+#Carregando os dados
 def limpando_dados(df): #criando funcao para facilitar o trabalho do processamento
 
     df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')#tirando espaços e formatando as strings das colunas para caixa baixa #tranformando espaços entre as palavras em _ para melhor gerenciamento de variaveis
@@ -38,9 +43,14 @@ def limpando_dados(df): #criando funcao para facilitar o trabalho do processamen
                                                                             #só as que tiverem mais doque 1 min de tempo entre a coleta e a entrega
                                                                             #Removendo entregas sem valor registrado (0)
 
-df = limpando_dados(df)
-print(df) #exibindo o dataframe para ver os dados formatados e limpos
-print("Dados limpos e prontos!")
+try:
+    df = limpando_dados(df) #dataframe recebe os valores da funcao
+    print(df) #exibindo o dataframe para ver os dados formatados e limpos
+    print("Dados limpos e prontos!")
+except KeyError as erro: #mensagem de erro caso nao encontre uma coluna no arquivo principal
+    print(f"Erro: A coluna {erro} não existe no arquivo original!")
+except Exception as excecao: #mensagem de erro caso de erro no processo de limpeza de dados
+    print(f"Erro na limpeza dos dados: {excecao}")
 
 
 
