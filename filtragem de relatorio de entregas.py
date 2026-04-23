@@ -3,36 +3,44 @@
 import pandas as pd #importando biblioteca pandas para ler o arquivo csv
 import sqlite3 #importando a conexao sql para criar um banco de dados
 import matplotlib.pyplot as plt #importando a biblioteca matplot para exibir relatorios em forma de grafico 
+import seaborn as sns #biblioteca que deixa os graficos mais bonitos
 
 #Carregando os dados
 df = pd.read_csv('rota1.csv', sep = ';') #lendo o arquivo csv e transformando em data frame
  #exibindo o data frame
 print(df)
 
-df.columns = df.columns.str.strip().str.lower() #tirando espaços e formatando as strings das colunas para caixa baixa
-df.columns = df.columns.str.replace(' ', '_') #tranformando espaços entre as palavras em _ para melhor gerenciamento de variaveis
-print(df.columns) #exibindo colunas para garantir a formataçao
-df['taxa'] = df['taxa'].str.replace('R$', '', regex=False).str.replace(',', '.') #tirando o R$ para o python ler como numero e tranformando virgulas em pontos para serem lidos adequadamente
-df['taxa'] = pd.to_numeric(df['taxa'], errors='coerce') # Garantindo que é formato float
-df = df.dropna(subset=['taxa']) # Removendo entregas sem valor registrado (0)
-df['bairro'] = df['bairro'].str.strip().str.lower() # Padronizando os nomes das rotas por garantia
-df['bairro'] = df['bairro'].str.title() #aqui deixa a primeira letra maiuscula da palavra padronizado para todos
-print(df)
-coleta_dt =  pd.to_datetime(df['pedido_coletado'],format='%H:%M')  #formatando a coluna pedido coletado para o tipo data
-entrega_dt = pd.to_datetime(df['pedido_entregue'],format ='%H:%M') #formatando a coluna pedido coletado para o tipo data
+def limpando_dados(df): #criando funcao para facilitar o trabalho do processamento
 
-diferenca = entrega_dt - coleta_dt#calculo de tempo da coleta ate a entrega
-df['tempo_entrega(min)'] = diferenca.dt.total_seconds() / 60 #adicionando coluna tempo_entrega para exibir o tempo gasto da coleta ate a entrega formatado em minutos
-df['pedido_coletado'] = coleta_dt.dt.strftime('%H:%M') #padronizando a coluna pedido_coletado em hora e minuto
-df['pedido_entregue'] = entrega_dt.dt.strftime('%H:%M') #padronizando a coluna pedido_entregue em hora e minuto
-print(df)
-# Removendo erros (entregas negativas)
-df = df[df['tempo_entrega(min)'] > 1] #se no dataframe a entrega tiver tempo negativo ou igual a zero ela nao sera exibida, só as que tiverem mais doque 1 min de tempo entre a coleta e a entrega
-print('bibibi')
-print(df)
-print("Dados limpos e prontos!")
+    df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')#tirando espaços e formatando as strings das colunas para caixa baixa #tranformando espaços entre as palavras em _ para melhor gerenciamento de variaveis
+    print(df.columns) #exibindo colunas para garantir a formataçao
 
+    df['taxa'] = df['taxa'].str.replace(r'[R\$\s]', '', regex=True).replace(',', '.', regex=True) #tirando o R$ para o python ler como numero e tranformando virgulas em pontos para serem lidos adequadamente
+    df['taxa'] = pd.to_numeric(df['taxa'], errors='coerce') # Garantindo que é formato float
+
+    
+
+    df['bairro'] = df['bairro'].str.strip().str.lower() # Padronizando os nomes das rotas por garantia
+    df['bairro'] = df['bairro'].str.title() #aqui deixa a primeira letra maiuscula da palavra padronizado para todos
+    
+
+    coleta_dt =  pd.to_datetime(df['pedido_coletado'],format='%H:%M',errors='coerce')  #formatando a coluna pedido coletado para o tipo data e definindo que nao de erro quando a hora estiver vazia
+    entrega_dt = pd.to_datetime(df['pedido_entregue'],format ='%H:%M',errors="coerce") #formatando a coluna pedido coletado para o tipo data e definindo que nao de erro quando a hora estiver vazia
+
+    diferenca = entrega_dt - coleta_dt#calculo de tempo da coleta ate a entrega
+    df['tempo_entrega(min)'] = diferenca.dt.total_seconds() / 60 #adicionando coluna tempo_entrega para exibir o tempo gasto da coleta ate a entrega formatado em minutos
+    df['pedido_coletado'] = coleta_dt.dt.strftime('%H:%M') #padronizando a coluna pedido_coletado em hora e minuto
+    df['pedido_entregue'] = entrega_dt.dt.strftime('%H:%M') #padronizando a coluna pedido_entregue em hora e minuto
+    
+
+    # Removendo erros (entregas negativas)
+    return df[(df['tempo_entrega(min)'] > 1) & (df['taxa'] >0)].dropna()#se no dataframe a entrega tiver tempo negativo ou igual a zero ela nao sera exibida, 
+                                                                            #só as que tiverem mais doque 1 min de tempo entre a coleta e a entrega
+                                                                            #Removendo entregas sem valor registrado (0)
+
+df = limpando_dados(df)
 print(df) #exibindo o dataframe para ver os dados formatados e limpos
+print("Dados limpos e prontos!")
 
 
 
@@ -65,20 +73,24 @@ GROUP BY bairro
 ORDER BY quantidade_entregas DESC;
 """#filtrando o a contagem de entregas em cada respectivo bairro no mes
 
+with sqlite3.connect('logistica_pessoal.db') as conn:
+    df.to_sql('entregas', conn, if_exists='replace', index=False)
+    df_top = pd.read_sql(query_top_dia, conn)#variavel que recebeu os dados da query do top do dia e a conexao com o banco de dados
+    df_volume = pd.read_sql(query_volume_bairro, conn)#variavel que recebeu os dados da query do volume do bairro no mes e a conexao com o banco de dados
+     #o with fecha a conexao com o banco de dados automaticamente, pois as variaveis anteriores ja armazenaram os dados que preciso para exibir os graficos
 
-df_top = pd.read_sql(query_top_dia, conn)#variavel que recebeu os dados da query do top do dia e a conexao com o banco de dados
-df_volume = pd.read_sql(query_volume_bairro, conn)#variavel que recebeu os dados da query do volume do bairro no mes e a conexao com o banco de dados
-conn.close() #fechando a conexao com o banco de dados pouis as variaveis anteriores ja armazenaram os dados que preciso para exibir os graficos
-
+sns.set_theme(style="dark") #definindo o tema de fundo dos graficos
 total_entregas_bairro = df_top['quantidade_entregas'].sum() #soma das entregas no bairro a partir da variavel que recebeu os dados do Top do dia
-plt.figure(figsize=(12, 6)) #dimensoes do grafico que quero que tenha os dados coletados do top do dia
-barras = plt.bar(df_top['data_entregas'], df_top['lucro_maximo'], color='skyblue') #variavel barras recebendo os dados da data de entrega e lucro maximo para o eixo x e y do grafico
+plt.figure(figsize=(12, 7)) #dimensoes do grafico que quero que tenha os dados coletados do top do dia
+barras = sns.barplot(x=df_top['data_entregas'], y=df_top['lucro_maximo'], palette="viridis") #variavel barras recebendo os dados da data de entrega e lucro maximo para o eixo x e y do grafico
 
-for barra, bairro, qtd in zip(barras, df_top['bairro'], df_top['lucro_maximo']): #para cada barra, bairro e quantidade dentro do dicionario barras e de acordo com os dados do data frame, fazer:
+for barra, bairro, qtd in zip(barras.patches, df_top['bairro'], df_top['lucro_maximo']): #para cada barra, bairro e quantidade dentro do dicionario barras e de acordo com os dados do data frame, fazer:
     yvalor = barra.get_height() #o valor do eixo y sera o tamanho dos dados que foi pego da contagem de barra e tranformando em altura no grafico
-    plt.text(barra.get_x() + barra.get_width()/2, yvalor + 0.5, #o texto que sera exibido na barra ao decorrer do eixo x e uma distancia de 0,5 da borda da barra
-             f'{bairro}\n(R$ {int(qtd)},00)', #textos que vao aparecer no em cima de cada bairra com seu respectivo dado filtrado do bairro e a quantidade em inteiros
-             ha='center', va='bottom', fontweight='bold', color='darkblue', fontsize=9) #formatacao do texto, centralizada, em cima da barra, negrito, cor azul e tamanho da fonte 9
+    barras.annotate(f'{bairro}\n(R$ {int(qtd)},00)',#o texto que sera exibido na barra ao decorrer do eixo x e uma distancia de 0,5 da borda da barra
+            xy = (barra.get_x() + barra.get_width()/2, yvalor),
+            xytext= (0,5), #textos que vao aparecer no em cima de cada bairra com seu respectivo dado filtrado do bairro e a quantidade em inteiros
+            textcoords="offset points",
+            ha='center', va='bottom', fontweight='bold', color='darkblue', fontsize=9) #formatacao do texto, centralizada, em cima da barra, negrito, cor azul e tamanho da fonte 9
 
 plt.title('Bairro Mais Lucrativo por Dia (Top Performance)', fontsize=14) #titulo do grafico com tamanho 14
 plt.xlabel('Data') #parte inferior do grafico com a legenda data 
@@ -87,13 +99,14 @@ plt.xticks(rotation=45) #direçao da rotacao do texto na legenda do eixo x
 plt.ylim(0, df_top['lucro_maximo'].max() + 5) # Dá um espaço no topo para o texto
 plt.tight_layout()#garantindo que todos as informaçoes apareçam no grafico sem areas cortadas ou incompletas
 plt.savefig('lucro_bairro_por_dia.png') #criando uma figura a partir do texto   
+sns.despine()# Remove as bordas desnecessárias
 plt.show() #exibindo a figura formada
 
 total_entregas = df_volume['quantidade_entregas'].sum() #soma das entregas no totais de todos os bairros a partir da variavel que recebeu os dados do volumes
 plt.figure(figsize=(10, 6))#dimensoes do grafico que quero que tenha os dados coletados do top do dia
 
 # Usando gráfico de barras horizontais (barh) para facilitar a leitura dos nomes
-barras_a = plt.barh(df_volume['bairro'], df_volume['quantidade_entregas'], color='salmon') #variavel barras recebendo os dados do bairro e quantidade de entregas para o eixo x e y do grafico
+barras_a = plt.barh(df_volume['bairro'], df_volume['quantidade_entregas'], color='darkred') #variavel barras recebendo os dados do bairro e quantidade de entregas para o eixo x e y do grafico
 
 for barra in barras_a: #para cada barra no dicionario barras
     tamanho = barra.get_width() #pega o valor da quantidade
