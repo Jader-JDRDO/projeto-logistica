@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt #importando a biblioteca matplot para exibir rel
 import seaborn as sns #biblioteca que deixa os graficos mais bonitos
 
 try:
-    df = pd.read_csv('rota1.csv', sep=';')#lendo o arquivo csv e transformando em data frame
+    df = pd.read_csv('relatorio_abril.csv', sep=';')#lendo o arquivo csv e transformando em data frame
     print(df) #exibindo o data frame
 except FileNotFoundError: #erro de arquivo nao encontrado
-    print("Erro: O arquivo 'rota1.csv' não foi encontrado!")
+    print("Erro: O arquivo 'relatorio_abril.csv' não foi encontrado!")
     exit() # encerra o script
 except Exception as excecao: #erro de excecao
     print(f"Ocorreu um erro inesperado ao ler o arquivo: {excecao}")
@@ -92,7 +92,7 @@ with sqlite3.connect('logistica_pessoal.db') as conn:
 sns.set_theme(style="dark") #definindo o tema de fundo dos graficos
 total_entregas_bairro = df_top['quantidade_entregas'].sum() #soma das entregas no bairro a partir da variavel que recebeu os dados do Top do dia
 plt.figure(figsize=(12, 7)) #dimensoes do grafico que quero que tenha os dados coletados do top do dia
-barras = sns.barplot(x=df_top['data_entregas'], y=df_top['lucro_maximo'], palette="viridis") #variavel barras recebendo os dados da data de entrega e lucro maximo para o eixo x e y do grafico
+barras = sns.barplot(x=df_top['data_entregas'], y=df_top['lucro_maximo'], hue=df_top['data_entregas'],palette="viridis",legend=False) #variavel barras recebendo os dados da data de entrega e lucro maximo para o eixo x e y do grafico
 
 for barra, bairro, qtd in zip(barras.patches, df_top['bairro'], df_top['lucro_maximo']): #para cada barra, bairro e quantidade dentro do dicionario barras e de acordo com os dados do data frame, fazer:
     yvalor = barra.get_height() #o valor do eixo y sera o tamanho dos dados que foi pego da contagem de barra e tranformando em altura no grafico
