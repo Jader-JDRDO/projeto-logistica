@@ -39,19 +39,43 @@ def limpando_dados(df): #criando funcao para facilitar o trabalho do processamen
     
 
     # Removendo erros (entregas negativas)
-    return df[(df['tempo_entrega(min)'] > 1) & (df['taxa'] >0)].dropna()#se no dataframe a entrega tiver tempo negativo ou igual a zero ela nao sera exibida, 
+    return df[(df['tempo_entrega(min)'] > 0) & (df['taxa'] >0)].dropna()#se no dataframe a entrega tiver tempo negativo ou igual a zero ela nao sera exibida, 
                                                                             #só as que tiverem mais doque 1 min de tempo entre a coleta e a entrega
                                                                             #Removendo entregas sem valor registrado (0)
-
+print(df)
 try:
     df = limpando_dados(df) #dataframe recebe os valores da funcao
     print(df) #exibindo o dataframe para ver os dados formatados e limpos
     print("Dados limpos e prontos!")
+    
 except KeyError as erro: #mensagem de erro caso nao encontre uma coluna no arquivo principal
     print(f"Erro: A coluna {erro} não existe no arquivo original!")
 except Exception as excecao: #mensagem de erro caso de erro no processo de limpeza de dados
     print(f"Erro na limpeza dos dados: {excecao}")
 
+try:
+        df_tempo_bairro = df.groupby('bairro')['tempo_entrega(min)'].mean().sort_values(ascending=False).reset_index()
+        plt.figure(figsize=(10, 8))
+        linhas = sns.barplot(data=df_tempo_bairro, y='bairro', x='tempo_entrega(min)', palette="viridis")
+        
+        for barra in linhas.patches: #para cada barra no dicionario barras
+            tamanho = barra.get_width() #pega o valor da quantidade
+            plt.text(tamanho + 0.3,  #posição x um pouco depois da barra
+            barra.get_y() + barra.get_height()/2, #posição y no meio da barra
+            f'{int(tamanho)}', #o texto da quantidade convertida em inteiro)
+            va='center', fontsize=10, fontweight='bold') #formatacao do texto em centralizado,tamanho 10, negrito
+            
+
+        plt.title('Tempo Médio Entrega por Bairro Restaurante até o Cliente', fontsize=14, fontweight='bold')
+        plt.xlabel('Minutos (min)')
+        plt.ylabel('Bairro')
+        plt.grid(axis='x', linestyle='--', alpha=0.6)
+
+        plt.tight_layout()
+        plt.savefig('eficiencia_tempo_bairro.png')
+        plt.show()
+except KeyError as erro: #mensagem de erro caso nao encontre uma coluna no arquivo principal
+    print(f"Erro: {erro} nao possibilitou fazer o grafico não existe no arquivo original!")
 
 
 conn = sqlite3.connect('logistica_pessoal.db') #conexao com o banco de dados
