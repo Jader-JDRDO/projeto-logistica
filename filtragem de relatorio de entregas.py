@@ -23,7 +23,7 @@ def limpando_dados(df): #criando funcao para facilitar o trabalho do processamen
 
     df['taxa'] = df['taxa'].str.replace(r'[R\$\s]', '', regex=True).replace(',', '.', regex=True) #tirando o R$ para o python ler como numero e tranformando virgulas em pontos para serem lidos adequadamente
     df['taxa'] = pd.to_numeric(df['taxa'], errors='coerce') # Garantindo que é formato float
-
+    df['bairro']=df['bairro'].str.replace('ã','a',regex=True).replace('ç','c',regex=True)
     df['data_entregas'] = pd.to_datetime(df['data_entregas'], dayfirst=True)
 
     df['bairro'] = df['bairro'].str.strip().str.lower() # Padronizando os nomes das rotas por garantia
@@ -224,7 +224,7 @@ else:
                     xy=(0.80, 0.95), xycoords='axes fraction', #posiçao da legenda dentro do grafico
                     fontsize=12, fontweight='bold', color='white', #formatacao do texto tamanho 12, negrito,cor branca
                     bbox=dict(boxstyle="round,pad=0.5", fc="darkred", ec="black", alpha=0.8)) #adicionando borda circular de 0.5 de espessura e cor vermelha no interior e preto na cor da borda
-        plt.title('Quantidade Total de Entregas por Bairro no MES', fontsize=14) #titulo do grafico com tamanho 14
+        plt.title('Quantidade Total de Entregas por Bairro', fontsize=14) #titulo do grafico com tamanho 14
         plt.xlabel('Número de Entregas') #parte inferior do grafico com a legenda numero de entregas
         plt.ylabel('Bairro')#parte lateral do grafico com legenda do bairro
         plt.tight_layout() #garantindo que todos as informaçoes apareçam no grafico sem areas cortadas ou incompletas
