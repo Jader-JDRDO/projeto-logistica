@@ -8,7 +8,7 @@ import seaborn as sns #biblioteca que deixa os graficos mais bonitos
 try:
     df_a = pd.read_csv('relatorio_abril.csv', sep=';')
     df_m= pd.read_csv('relatorio_marco.csv', sep=';')#lendo o arquivo csv e transformando em data frame
-    print(df) #exibindo o data frame
+    
 except FileNotFoundError: #erro de arquivo nao encontrado
     print("Erro: O arquivo 'relatorio_abril.csv' não foi encontrado!")
     exit() # encerra o script
