@@ -57,6 +57,27 @@ except KeyError as erro: #mensagem de erro caso nao encontre uma coluna no arqui
 except Exception as excecao: #mensagem de erro caso de erro no processo de limpeza de dados
     print(f"Erro na limpeza dos dados: {excecao}")
 
+
+query_top_dia = """
+    SELECT 
+        data_entregas, 
+        SUM(taxa) AS lucro_total, 
+        COUNT(*) AS quantidade_total
+    FROM entregas
+    GROUP BY data_entregas;
+    """
+
+query_volume_bairro = """
+SELECT 
+    bairro, 
+    COUNT(*) AS quantidade_entregas
+FROM entregas
+GROUP BY bairro
+ORDER BY quantidade_entregas DESC;
+"""#filtrando a contagem de entregas em cada respectivo bairro no mes
+
+
+
 try:
         
     df_consolidado = pd.concat([df_m, df_a], ignore_index=True)
@@ -96,45 +117,16 @@ try:
     plt.show()
 
 except Exception as e:
-    print(f"Erro no gráfico de lucro por hora: {e}")
-
-
-
-
-
-
-
-
-
-query_volume_bairro = """
-SELECT 
-    bairro, 
-    COUNT(*) AS quantidade_entregas
-FROM entregas
-GROUP BY bairro
-ORDER BY quantidade_entregas DESC;
-"""#filtrando a contagem de entregas em cada respectivo bairro no mes
-
-with sqlite3.connect('logistica_pessoal.db') as conn:
-    # Salva o consolidado limpo
     
-    # Busca os dados (o SQLite vai tratar a data como string ISO: yyyy-mm-dd)
-    df_volume = pd.read_sql(query_volume_bairro, conn)
-
+    print(f"Erro no gráfico de lucro por hora: {e}")
 with sqlite3.connect('logistica_pessoal.db') as conn:
-    query_top_dia = """
-SELECT 
-    data_entregas, 
-    SUM(taxa) AS lucro_total, 
-    COUNT(*) AS quantidade_total
-FROM entregas
-GROUP BY data_entregas;
-"""
 
+    
     df_consolidado.to_sql('entregas', conn, if_exists='replace', index=False)
+    df_volume = pd.read_sql(query_volume_bairro, conn)
     df_top = pd.read_sql(query_top_dia, conn)#variavel que recebeu os dados da query do top do dia e a conexao com o banco de dados
-   #variavel que recebeu os dados da query do volume do bairro no mes e a conexao com o banco de dados
-     #o with fecha a conexao com o banco de dados automaticamente, pois as variaveis anteriores ja armazenaram os dados que preciso para exibir os graficos
+    #variavel que recebeu os dados da query do volume do bairro no mes e a conexao com o banco de dados
+        #o with fecha a conexao com o banco de dados automaticamente, pois as variaveis anteriores ja armazenaram os dados que preciso para exibir os graficos
 
    
 
@@ -149,7 +141,7 @@ else:
         df_marco = df_top[df_top['mes_aux'] == 3].copy().sort_values('data_entregas')
         df_abril = df_top[df_top['mes_aux'] == 4].copy().sort_values('data_entregas')
 
-        # 3. Criando a coluna formatada para o eixo X
+        
         df_marco['data_formatada'] = df_marco['data_entregas'].dt.strftime('%d/%m')
         df_abril['data_formatada'] = df_abril['data_entregas'].dt.strftime('%d/%m')
 
@@ -161,10 +153,10 @@ else:
         for barra, lucro, qtd in zip(barras_m.patches, df_marco['lucro_total'], df_marco['quantidade_total']):
             ax1.annotate(f'R$ {int(lucro)}\n({qtd} entregas)', 
                         xy=(barra.get_x() + barra.get_width()/2, barra.get_height()),
-                        xytext=(0, 5), textcoords="offset points",
-                        ha='center', va='bottom', fontsize=8, fontweight='bold', color='black')
+                        xytext=(0, 2), textcoords="offset points",
+                        ha='center', va='bottom', fontsize=7, fontweight='bold', color='black')
 
-        ax1.set_title('LUCRO TOTAL DIÁRIO - MARÇO/2026', fontsize=14, fontweight='bold')
+        ax1.set_title('LUCRO TOTAL DIÁRIO - MARÇO/2026', fontsize=12, fontweight='bold')
         ax1.set_ylabel('Lucro Total (R$)')
         ax1.set_xlabel('')
 
@@ -173,14 +165,15 @@ else:
         for barra, lucro, qtd in zip(barras_a.patches, df_abril['lucro_total'], df_abril['quantidade_total']):
             ax2.annotate(f'R$ {int(lucro)}\n({qtd} entregas)', 
                         xy=(barra.get_x() + barra.get_width()/2, barra.get_height()),
-                        xytext=(0, 5), textcoords="offset points",
-                        ha='center', va='bottom', fontsize=8, fontweight='bold', color='black')
+                        xytext=(0, 2), textcoords="offset points",
+                        ha='center', va='bottom', fontsize=7, fontweight='bold', color='black')
 
-        ax2.set_title('LUCRO TOTAL DIÁRIO - ABRIL/2026', fontsize=14, fontweight='bold')
+        ax2.set_title('LUCRO TOTAL DIÁRIO - ABRIL/2026', fontsize=12, fontweight='bold')
         ax2.set_ylabel('Lucro Total (R$)')
-        ax2.set_xlabel('Dia')
-
+        ax2.set_xlabel('')
+        sns.despine()# Remove as bordas desnecessárias
         plt.tight_layout()
+        plt.subplots_adjust(hspace=0.3)
         plt.savefig('lucro_total_diario_comparativo.png')
         plt.show()
 
@@ -207,3 +200,50 @@ else:
         plt.tight_layout() #garantindo que todos as informaçoes apareçam no grafico sem areas cortadas ou incompletas
         plt.savefig('quantidade_entregas_bairro.png')#criando uma figura a partir do texto  
         plt.show()#exibindo a figura formada
+
+try:
+    
+    mapa_dias = {
+        'Monday': 'Segunda', 'Tuesday': 'Terça', 'Wednesday': 'Quarta',
+        'Thursday': 'Quinta', 'Friday': 'Sexta', 'Saturday': 'Sábado', 'Sunday': 'Domingo'
+    }
+
+   
+    df_consolidado['dia_semana'] = df_consolidado['data_entregas'].dt.day_name().map(mapa_dias)
+
+    df_eficiencia = df_consolidado.groupby(['data_entregas', 'dia_semana']).agg({
+        'taxa': 'sum',
+        'tempo_entrega(min)': 'sum'
+    }).reset_index()
+
+    df_eficiencia['lucro_por_hora'] = df_eficiencia['taxa'] / (df_eficiencia['tempo_entrega(min)'] / 60)
+
+
+    ordem_dias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
+    df_resumo_semana = df_eficiencia.groupby('dia_semana')['lucro_por_hora'].mean().reindex(ordem_dias).reset_index()
+
+    plt.figure(figsize=(12, 6))
+    sns.set_theme(style="whitegrid")
+    
+    grafico = sns.barplot(data=df_resumo_semana, x='dia_semana', y='lucro_por_hora',hue='dia_semana', palette="dark")
+
+    # Adicionando os valores em cima das barras
+    for p in grafico.patches:
+        grafico.annotate(f'R$ {p.get_height():.2f}/h', 
+                         (p.get_x() + p.get_width() / 2., p.get_height()), 
+                         ha = 'center', va = 'center', 
+                         xytext = (0, 9), 
+                         textcoords = 'offset points',
+                         fontweight='bold')
+
+    plt.title('Eficiência Média: Lucro por Hora por Dia da Semana', fontsize=14, fontweight='bold')
+    plt.ylabel('R$ Médio por Hora')
+    plt.xlabel('Dia da Semana')
+    plt.ylim(0, df_resumo_semana['lucro_por_hora'].max() + 10)
+    
+    plt.tight_layout()
+    plt.savefig('eficiencia_dia_semana.png')
+    plt.show()
+
+except Exception as e:
+    print(f"Erro na análise de eficiência semanal: {e}")
