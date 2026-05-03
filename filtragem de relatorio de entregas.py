@@ -58,65 +58,52 @@ except Exception as excecao: #mensagem de erro caso de erro no processo de limpe
     print(f"Erro na limpeza dos dados: {excecao}")
 
 try:
-        df_consolidado = pd.concat([df_m, df_a], ignore_index=True)
-        df_tempo_bairro = df_consolidado.groupby('bairro')['tempo_entrega(min)'].mean().sort_values(ascending=False).reset_index()
-        plt.figure(figsize=(12, 7))
-        linhas = sns.barplot(data=df_tempo_bairro, y='bairro', x='tempo_entrega(min)',hue='bairro',palette="Reds_r", legend=False)
         
-        for barra in linhas.patches: #para cada barra no dicionario barras
-            tamanho = barra.get_width() #pega o valor da quantidade
-            plt.text(tamanho + 0.3,  #posição x um pouco depois da barra
-            barra.get_y() + barra.get_height()/2, #posição y no meio da barra
-            f'{int(tamanho)}', #o texto da quantidade convertida em inteiro)
-            va='center', fontsize=10, fontweight='bold') #formatacao do texto em centralizado,tamanho 10, negrito
-            
-
-        plt.title('Tempo Médio Entrega por Rota: Restaurante até o Cliente (Bairro)', fontsize=14, fontweight='bold')
-        plt.xlabel('Minutos (min)')
-        plt.ylabel('Bairro')
-        plt.grid(axis='x', linestyle='-', alpha=0.6)
-
-        plt.tight_layout()
-        plt.savefig('eficiencia_tempo_bairro.png')
-        plt.show()
-except KeyError as erro: #mensagem de erro caso nao encontre uma coluna no arquivo principal
-    print(f"Erro: {erro} nao possibilitou fazer o grafico não existe no arquivo original!")
-
-
-try:
-        traducao_meses = {'February':'Fevereiro','March': 'Março','April': 'Abril','June': 'Junho'}
-        
-        df_linha = df_consolidado.groupby(['data_entregas']).agg({'taxa': 'sum'}).reset_index()
-
+    df_consolidado = pd.concat([df_m, df_a], ignore_index=True)
     
-        df_linha['mes'] = df_linha['data_entregas'].dt.month_name().map(traducao_meses)
-        df_linha['dia_do_mes'] = df_linha['data_entregas'].dt.day # Para alinhar dia 1 com dia 1
+    traducao_meses = {'February':'Fevereiro','March': 'Março','April': 'Abril','June': 'Junho'}
+    
+    df_linha = df_consolidado.groupby(['data_entregas']).agg({
+        'taxa': 'sum', 
+        'tempo_entrega(min)': 'sum'
+    }).reset_index()
 
-        plt.figure(figsize=(12, 6))
 
-       
-        sns.lineplot(data=df_linha, x='dia_do_mes', y='taxa', hue='mes', 
-                    marker='o', linewidth=2, palette={'Março': 'blue', 'Abril': 'orange'})
+    df_linha['lucro_por_hora'] = df_linha['taxa'] / (df_linha['tempo_entrega(min)'] / 60)
+    
+    # Tratamento de datas e nomes
+    df_linha['mes'] = df_linha['data_entregas'].dt.month_name().map(traducao_meses)
+    df_linha['dia_do_mes'] = df_linha['data_entregas'].dt.day
 
-        plt.title('Evolução do Lucro Diário: Março vs Abril', fontsize=14, fontweight='bold')
-        plt.xlabel('Dia do Mês')
-        plt.ylabel('Lucro Total (R$)')
-        plt.xticks(range(1, 32)) # Garante que apareçam todos os dias no eixo X
-        plt.grid(True, alpha=0.3)
-        plt.legend(title='Mês')
+    plt.figure(figsize=(12, 6))
+    sns.set_theme(style="whitegrid")
 
-        plt.tight_layout()
-        plt.savefig('evolucao_comparativa_mensal.png')
-        plt.show()
+    sns.lineplot(data=df_linha, x='dia_do_mes', y='lucro_por_hora', hue='mes', 
+                 marker='o', linewidth=2.5, palette={'Março': 'blue', 'Abril': 'orange'})
+
+   
+    plt.axhline(y=20, color='red', linestyle='--', alpha=0.5, label='Meta R$ 20/h')
+
+    plt.title('Lucro por Hora Trabalhada (Março vs Abril)', fontsize=14, fontweight='bold')
+    plt.xlabel('Dia do Mês')
+    plt.ylabel('R$ por Hora')
+    plt.xticks(range(1, 32))
+    plt.grid(True, alpha=0.3)
+    plt.legend(title='Mês')
+
+    plt.tight_layout()
+    plt.savefig('lucro_por_hora_diario.png')
+    plt.show()
+
 except Exception as e:
-    print(f"Erro no gráfico de linhas: {e}")
-except KeyError as erro: #mensagem de erro caso nao encontre uma coluna no arquivo principal
-    print(f"Erro: {erro} nao possibilitou fazer o grafico não existe no arquivo original!")
+    print(f"Erro no gráfico de lucro por hora: {e}")
 
 
-conn = sqlite3.connect('logistica_pessoal.db') #conexao com o banco de dados
-#conn = sqlite3.connect(r'C:\Users\Jader\Documents\logistica_pessoal.db')
-df_consolidado.to_sql('entregas', conn, if_exists='replace', index=False) #aqui eu digo que a tabela entregas existe e que se existe refazer com os dados novos
+
+
+
+
+
 
 
 query_volume_bairro = """
@@ -126,7 +113,7 @@ SELECT
 FROM entregas
 GROUP BY bairro
 ORDER BY quantidade_entregas DESC;
-"""#filtrando o a contagem de entregas em cada respectivo bairro no mes
+"""#filtrando a contagem de entregas em cada respectivo bairro no mes
 
 with sqlite3.connect('logistica_pessoal.db') as conn:
     # Salva o consolidado limpo
@@ -136,75 +123,65 @@ with sqlite3.connect('logistica_pessoal.db') as conn:
 
 with sqlite3.connect('logistica_pessoal.db') as conn:
     query_top_dia = """
-SELECT data_entregas, bairro, lucro_maximo, quantidade_entregas
-FROM (
-    SELECT 
-        data_entregas, 
-        bairro, 
-        SUM(taxa) AS lucro_maximo,
-        COUNT(*) AS quantidade_entregas,
-        ROW_NUMBER() OVER(PARTITION BY data_entregas ORDER BY SUM(taxa) DESC) as rank
-    FROM entregas
-    GROUP BY data_entregas, bairro
-)
-WHERE rank = 1;
-""" #filtrando a data de entrega o bairro que teve mais entregas o lucro desse bairro e quantas entregas foram feitas nesse mesmo bairro
-    #se a soma das taxas daquele bairro ultrapassar a soma dos demais entao esse bairro sera o TOP do dia
-    #com esse filtro os bairros TOP do dia vao ser ordenados e as respectivas quantidades vao ser exibidas
-   
+SELECT 
+    data_entregas, 
+    SUM(taxa) AS lucro_total, 
+    COUNT(*) AS quantidade_total
+FROM entregas
+GROUP BY data_entregas;
+"""
+
     df_consolidado.to_sql('entregas', conn, if_exists='replace', index=False)
     df_top = pd.read_sql(query_top_dia, conn)#variavel que recebeu os dados da query do top do dia e a conexao com o banco de dados
    #variavel que recebeu os dados da query do volume do bairro no mes e a conexao com o banco de dados
      #o with fecha a conexao com o banco de dados automaticamente, pois as variaveis anteriores ja armazenaram os dados que preciso para exibir os graficos
 
-if df_top.empty or df_volume.empty:
-    print("Atenção: Consultas SQL não retornaram dados. Verifique os nomes das colunas no banco.")
+   
+
+if df_top.empty:
+    print("Atenção: Consultas SQL não retornaram dados.")
 else:
         
         df_top['data_entregas'] = pd.to_datetime(df_top['data_entregas'])
         df_top['mes_aux'] = df_top['data_entregas'].dt.month
 
-        df_marco = df_top[df_top['mes_aux'] == 3].copy()
-        df_abril = df_top[df_top['mes_aux'] == 4].copy()
-
-        df_marco['data_entregas'] = df_marco['data_entregas'].dt.strftime('%d/%m')
-        df_abril['data_entregas'] = df_abril['data_entregas'].dt.strftime('%d/%m')
-
-      
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 10))
-        sns.set_theme(style="dark")
-
         
+        df_marco = df_top[df_top['mes_aux'] == 3].copy().sort_values('data_entregas')
+        df_abril = df_top[df_top['mes_aux'] == 4].copy().sort_values('data_entregas')
+
+        # 3. Criando a coluna formatada para o eixo X
+        df_marco['data_formatada'] = df_marco['data_entregas'].dt.strftime('%d/%m')
+        df_abril['data_formatada'] = df_abril['data_entregas'].dt.strftime('%d/%m')
+
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 12))
+        sns.set_theme(style="darkgrid")
+
+        barras_m = sns.barplot(data=df_marco, x='data_formatada', y='lucro_total', palette="viridis", ax=ax1, hue='data_formatada', legend=False)
         
-        barras_marco = sns.barplot(data=df_marco,x='data_entregas', y='lucro_maximo', hue='data_entregas',palette="viridis",ax=ax1,legend=False)
-        for barra, bairro, qtd in zip(barras_marco.patches, df_marco['bairro'], df_marco['lucro_maximo']): #para cada barra, bairro e quantidade dentro do dicionario barras e de acordo com os dados do data frame, fazer:
-            yvalor = barra.get_height() #o valor do eixo y sera o tamanho dos dados que foi pego da contagem de barra e tranformando em altura no grafico
-            barras_marco.annotate(f'{bairro}\n(R$ {int(qtd)},00)',#o texto que sera exibido na barra ao decorrer do eixo x e uma distancia de 0,5 da borda da barra
-                    xy = (barra.get_x() + barra.get_width()/2, yvalor),
-                    xytext= (0,3), #textos que vao aparecer no em cima de cada bairra com seu respectivo dado filtrado do bairro e a quantidade em inteiros
-                    textcoords="offset points",
-                    ha='center', va='bottom', fontweight='bold', color='darkblue', fontsize=7)
-        ax1.set_title('MARÇO/2026', fontsize=14, fontweight='bold')
+        for barra, lucro, qtd in zip(barras_m.patches, df_marco['lucro_total'], df_marco['quantidade_total']):
+            ax1.annotate(f'R$ {int(lucro)}\n({qtd} entregas)', 
+                        xy=(barra.get_x() + barra.get_width()/2, barra.get_height()),
+                        xytext=(0, 5), textcoords="offset points",
+                        ha='center', va='bottom', fontsize=8, fontweight='bold', color='black')
+
+        ax1.set_title('LUCRO TOTAL DIÁRIO - MARÇO/2026', fontsize=14, fontweight='bold')
+        ax1.set_ylabel('Lucro Total (R$)')
         ax1.set_xlabel('')
-        ax1.set_ylabel('Lucro (R$)')
-        ax1.tick_params(axis='x', rotation=45)
+
+        barras_a = sns.barplot(data=df_abril, x='data_formatada', y='lucro_total', palette="viridis", ax=ax2, hue='data_formatada', legend=False)
         
-        barras_abril = sns.barplot(data=df_abril,x='data_entregas', y='lucro_maximo', hue='data_entregas',palette="viridis",ax=ax2,legend=False)
-        for barra, bairro, qtd in zip(barras_abril.patches, df_abril['bairro'], df_abril['lucro_maximo']): #para cada barra, bairro e quantidade dentro do dicionario barras e de acordo com os dados do data frame, fazer:
-            yvalor = barra.get_height() #o valor do eixo y sera o tamanho dos dados que foi pego da contagem de barra e tranformando em altura no grafico
-            barras_abril.annotate(f'{bairro}\n(R$ {int(qtd)},00)',#o texto que sera exibido na barra ao decorrer do eixo x e uma distancia de 0,5 da borda da barra
-                    xy = (barra.get_x() + barra.get_width()/2, yvalor),
-                    xytext= (0,3), #textos que vao aparecer no em cima de cada bairra com seu respectivo dado filtrado do bairro e a quantidade em inteiros
-                    textcoords="offset points",
-                    ha='center', va='bottom', fontweight='bold', color='darkblue', fontsize=7)
-        ax2.set_title('ABRIL/2026', fontsize=14, fontweight='bold')
-        ax2.set_ylabel('Lucro (R$)') #parte lateral do grafico com legenda do lucro do bairro
-        ax2.set_xlabel('')
-        ax2.tick_params(axis='x', rotation=45) #direçao da rotacao do texto na legenda do eixo x
+        for barra, lucro, qtd in zip(barras_a.patches, df_abril['lucro_total'], df_abril['quantidade_total']):
+            ax2.annotate(f'R$ {int(lucro)}\n({qtd} entregas)', 
+                        xy=(barra.get_x() + barra.get_width()/2, barra.get_height()),
+                        xytext=(0, 5), textcoords="offset points",
+                        ha='center', va='bottom', fontsize=8, fontweight='bold', color='black')
+
+        ax2.set_title('LUCRO TOTAL DIÁRIO - ABRIL/2026', fontsize=14, fontweight='bold')
+        ax2.set_ylabel('Lucro Total (R$)')
+        ax2.set_xlabel('Dia')
+
         plt.tight_layout()
-        plt.ylim(0, df_top['lucro_maximo'].max() + 5)
-        sns.despine()# Remove as bordas desnecessárias
-        plt.savefig('comparativo_top_mensal_empilhado.png')
+        plt.savefig('lucro_total_diario_comparativo.png')
         plt.show()
 
         
