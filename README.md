@@ -35,13 +35,13 @@ Visualizações Geradas
 O script gera automaticamente dois arquivos de imagem para relatórios:
 
     lucro_total_diario_comparativo.png: Comparação de faturamento real entre os meses (Março vs Abril).
-    <img src="lucro_total_diario_comparativo.png" alt="Lucro comparativo diario" width="600">
+    
 
     quantidade_entregas_bairro.png: Ranking de volume por região.
-    <img src="quantidade_entregas_bairro.png" alt="quantidade entregas" width="600">
+    
 
     eficiencia_dia_semana.png: Médias de ganho por hora, facilitando o planejamento de escalas.
-    <img src="eficiencia_dia_semana.png" alt="Eficiência Semanal" width="600">
+    
     
 Como Executar o Projeto
 
