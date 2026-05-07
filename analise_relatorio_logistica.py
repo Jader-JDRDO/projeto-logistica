@@ -78,28 +78,30 @@ ORDER BY quantidade_entregas DESC;
 
 
 
-try:
+try: #funçao para validar se o codigo dentro desse parametro vai rodar sem dar erro e se der erro sera mais facil viazualizar onde esta o problema
         
-    df_consolidado = pd.concat([df_m, df_a], ignore_index=True)
+    df_consolidado = pd.concat([df_m, df_a], ignore_index=True) #juntando os dois dataframes com a funçao concat
     
-    traducao_meses = {'February':'Fevereiro','March': 'Março','April': 'Abril','June': 'Junho'}
+    traducao_meses = {'March': 'Março','April': 'Abril','June': 'Junho'} #dicionario com os meses e suas traduçoes para pt-br
     
-    df_linha = df_consolidado.groupby(['data_entregas']).agg({
+    df_linha = df_consolidado.groupby(['data_entregas']).agg({ 
         'taxa': 'sum', 
         'tempo_entrega(min)': 'sum'
     }).reset_index()
 
 
-    df_linha['lucro_por_hora'] = df_linha['taxa'] / (df_linha['tempo_entrega(min)'] / 60)
+    df_linha['lucro_por_hora'] = df_linha['taxa'] / (df_linha['tempo_entrega(min)'] / 60)#nova coluna onde cada linha vai ser a conta do lucro por hora de acordo com o respectivo dado
     
     # Tratamento de datas e nomes
-    df_linha['mes'] = df_linha['data_entregas'].dt.month_name().map(traducao_meses)
-    df_linha['dia_do_mes'] = df_linha['data_entregas'].dt.day
+
+    #nova coluna mes que vai receber somente a extraçao do mes do data entregas de acordo com  respectivo dado na linha
+    df_linha['mes'] = df_linha['data_entregas'].dt.month_name().map(traducao_meses)#apos a extraçao recebe a descriçao de acordo com o dicionario de traduçao de meses
+    df_linha['dia_do_mes'] = df_linha['data_entregas'].dt.day#nova coluna dia do mes que vai receber a extraçao do dia do mes de acordo com o respectivo dado
 
     plt.figure(figsize=(12, 6))
     sns.set_theme(style="whitegrid")
 
-    sns.lineplot(data=df_linha, x='dia_do_mes', y='lucro_por_hora', hue='mes', 
+    sns.lineplot(data=df_linha, x='dia_do_mes', y='lucro_por_hora', hue='mes', #grafico de linha usando como base os dados do dia do mes e o lucro por hora de acordo com os dois meses
                  marker='o', linewidth=2.5, palette={'Março': 'blue', 'Abril': 'orange'})
 
    
