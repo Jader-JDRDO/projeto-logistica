@@ -203,33 +203,35 @@ else:
         plt.savefig('quantidade_entregas_bairro.png')#criando uma figura a partir do texto  
         plt.show()#exibindo a figura formada
 
-try:
+try: #usando funçao para testar possivel falha no processo
     
     mapa_dias = {
         'Monday': 'Segunda', 'Tuesday': 'Terça', 'Wednesday': 'Quarta',
         'Thursday': 'Quinta', 'Friday': 'Sexta', 'Saturday': 'Sábado', 'Sunday': 'Domingo'
-    }
+    } #dicionario pontuando os dias em ingles e mostrando como eles sao em pt-br
 
-   
+   #coluna nova dia da semana vai receber em cada linha seu respectivo dia traduzido de acordo com a extraçao do nome dele
     df_consolidado['dia_semana'] = df_consolidado['data_entregas'].dt.day_name().map(mapa_dias)
 
+#calculo de eficiencia nas entregas vai ser o conjunto de acordo com o dia da semana traduzido e a data da entrega com sua respectiva taxa e tempo de entrega
     df_eficiencia = df_consolidado.groupby(['data_entregas', 'dia_semana']).agg({
         'taxa': 'sum',
         'tempo_entrega(min)': 'sum'
-    }).reset_index()
+    }).reset_index()#reset para cada linha fazer o processo
 
     df_eficiencia['lucro_por_hora'] = df_eficiencia['taxa'] / (df_eficiencia['tempo_entrega(min)'] / 60)
+    #coluna eficiencia lucro por hora recebe o agrupamento de eficiencia com a taxa dividido pelo tempo de entrega em minutos
 
 
-    ordem_dias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
+    ordem_dias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']#ordenando os dias
     df_resumo_semana = df_eficiencia.groupby('dia_semana')['lucro_por_hora'].mean().reindex(ordem_dias).reset_index()
-
+    #resumo da semana vai ser o lucro por hora de acordo com cada dia da semana ordenado
     plt.figure(figsize=(12, 6))
     sns.set_theme(style="whitegrid")
     
     grafico = sns.barplot(data=df_resumo_semana, x='dia_semana', y='lucro_por_hora',hue='dia_semana', palette="dark")
 
-    # Adicionando os valores em cima das barras
+    #Adicionando os valores em cima das barras
     for p in grafico.patches:
         grafico.annotate(f'R$ {p.get_height():.2f}/h', 
                          (p.get_x() + p.get_width() / 2., p.get_height()), 
@@ -248,4 +250,4 @@ try:
     plt.show()
 
 except Exception as e:
-    print(f"Erro na análise de eficiência semanal: {e}")
+    print(f"Erro na análise de eficiência semanal: {e}")#mensagem de erro caso nao aconteça o processo acima
