@@ -133,27 +133,28 @@ with sqlite3.connect('logistica_pessoal.db') as conn:
    
 
 if df_top.empty:
-    print("Atenção: Consultas SQL não retornaram dados.")
+    print("Atenção: Consultas SQL não retornaram dados.") #mensagem de erro caso o dataframe 'top' esteja vazio
 else:
         
-        df_top['data_entregas'] = pd.to_datetime(df_top['data_entregas'])
-        df_top['mes_aux'] = df_top['data_entregas'].dt.month
+        df_top['data_entregas'] = pd.to_datetime(df_top['data_entregas']) #coluna data entregas sendo convertida para tipo data
+        df_top['mes_aux'] = df_top['data_entregas'].dt.month #coluna mes auxiliar recebendo a extraçao dos meses de acordo com a data
 
         
-        df_marco = df_top[df_top['mes_aux'] == 3].copy().sort_values('data_entregas')
-        df_abril = df_top[df_top['mes_aux'] == 4].copy().sort_values('data_entregas')
+        df_marco = df_top[df_top['mes_aux'] == 3].copy().sort_values('data_entregas') #dataframe março quando o numero do mes for igual a 3 organizado por data
+        df_abril = df_top[df_top['mes_aux'] == 4].copy().sort_values('data_entregas')#dataframe abril quando o numero do mes for igual a 4 organizado por data
 
         
-        df_marco['data_formatada'] = df_marco['data_entregas'].dt.strftime('%d/%m')
-        df_abril['data_formatada'] = df_abril['data_entregas'].dt.strftime('%d/%m')
+        df_marco['data_formatada'] = df_marco['data_entregas'].dt.strftime('%d/%m') #dataframe março com coluna data formatada com extraçao apenas de dia e mes
+        df_abril['data_formatada'] = df_abril['data_entregas'].dt.strftime('%d/%m') #dataframe março com coluna data formatada com extraçao apenas de dia e mes
 
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 12))
         sns.set_theme(style="darkgrid")
-
+        #cada barra a ser exibida vai receber como parametro a data formatada e o lucro daquele dia
         barras_m = sns.barplot(data=df_marco, x='data_formatada', y='lucro_total', palette="viridis", ax=ax1, hue='data_formatada', legend=False)
         
+        #para cada barra, lucro, quantidade em um compactado da variavel barras, o lucro total no dataframe e a quantidade total no dataframe
         for barra, lucro, qtd in zip(barras_m.patches, df_marco['lucro_total'], df_marco['quantidade_total']):
-            ax1.annotate(f'R$ {int(lucro)}\n({qtd} entregas)', 
+            ax1.annotate(f'R$ {int(lucro)}\n({qtd} entregas)', #nota em cima da barra mostrando o lucro e quantidade de entregas na barra
                         xy=(barra.get_x() + barra.get_width()/2, barra.get_height()),
                         xytext=(0, 2), textcoords="offset points",
                         ha='center', va='bottom', fontsize=7, fontweight='bold', color='black')
