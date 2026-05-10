@@ -1,10 +1,12 @@
-#filtragem de relatorio de entregas
+#filtrando relatorio de entregas
 
+#importando bibliotecas necessarias para o script
 import pandas as pd #importando biblioteca pandas para ler o arquivo csv
 import sqlite3 #importando a conexao sql para criar um banco de dados
 import matplotlib.pyplot as plt #importando a biblioteca matplot para exibir relatorios em forma de grafico 
 import seaborn as sns #biblioteca que deixa os graficos mais bonitos
 
+#usando try/except para caso de erro em alguma parte
 try:
     df_a = pd.read_csv('relatorio_abril.csv', sep=';')
     df_m= pd.read_csv('relatorio_marco.csv', sep=';')#lendo o arquivo csv e transformando em data frame
@@ -16,6 +18,8 @@ except Exception as excecao: #erro de excecao
     print(f"Ocorreu um erro inesperado ao ler o arquivo: {excecao}")
 
 #Carregando os dados
+
+#processo de limpeza a partir de uma funçao
 def limpando_dados(df): #criando funcao para facilitar o trabalho do processamento
 
     df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')#tirando espaços e formatando as strings das colunas para caixa baixa #tranformando espaços entre as palavras em _ para melhor gerenciamento de variaveis
@@ -43,7 +47,7 @@ def limpando_dados(df): #criando funcao para facilitar o trabalho do processamen
     return df[(df['tempo_entrega(min)'] > 0) & (df['taxa'] >0)].dropna()#se no dataframe a entrega tiver tempo negativo ou igual a zero ela nao sera exibida, 
                                                                             #só as que tiverem mais doque 1 min de tempo entre a coleta e a entrega
                                                                             #Removendo entregas sem valor registrado (0)
-
+#fazendo um try com os dados do mes de março e abril passando pela funçao de limpenza
 try:
     df_a = limpando_dados(df_a)
     df_m = limpando_dados(df_m) #dataframe recebe os valores da funcao
