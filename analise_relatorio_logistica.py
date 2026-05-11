@@ -163,8 +163,8 @@ else:
                         xytext=(0, 2), textcoords="offset points",
                         ha='center', va='bottom', fontsize=7, fontweight='bold', color='black')
 
-        ax1.set_title('LUCRO TOTAL DIÁRIO - MARÇO/2026', fontsize=12, fontweight='bold')
-        ax1.set_ylabel('Lucro Total (R$)')
+        ax1.set_title('LUCRO TOTAL DIÁRIO - MARÇO/2026', fontsize=12, fontweight='bold') #titulo do grafico
+        ax1.set_ylabel('Lucro Total (R$)') #descriçao lateral do grafico
         ax1.set_xlabel('')
 
         barras_a = sns.barplot(data=df_abril, x='data_formatada', y='lucro_total', palette="viridis", ax=ax2, hue='data_formatada', legend=False)
@@ -180,9 +180,9 @@ else:
         ax2.set_xlabel('')
         sns.despine()# Remove as bordas desnecessárias
         plt.tight_layout()
-        plt.subplots_adjust(hspace=0.3)
-        plt.savefig('lucro_total_diario_comparativo.png')
-        plt.show()
+        plt.subplots_adjust(hspace=0.3) #ajuste de tamanho do espaço entre o grafico de cima e o debaixo para nao se sobreporem
+        plt.savefig('lucro_total_diario_comparativo.png') #salvando grafico como imagem
+        plt.show() #mostrando o grafico
 
         
         total_entregas = df_volume['quantidade_entregas'].sum() #soma das entregas no totais de todos os bairros a partir da variavel que recebeu os dados do volumes
