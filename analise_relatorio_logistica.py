@@ -8,6 +8,7 @@ import seaborn as sns #biblioteca que deixa os graficos mais bonitos
 
 #usando try/except para caso de erro em alguma parte
 try:
+    df_maio = pd.read_excel('relatorio_maio.xlsx', sep=';')
     df_a = pd.read_csv('relatorio_abril.csv', sep=';')
     df_m= pd.read_csv('relatorio_marco.csv', sep=';')#lendo o arquivo csv e transformando em data frame
     
@@ -27,8 +28,8 @@ def limpando_dados(df): #criando funcao para facilitar o trabalho do processamen
 
     df['taxa'] = df['taxa'].str.replace(r'[R\$\s]', '', regex=True).replace(',', '.', regex=True) #tirando o R$ para o python ler como numero e tranformando virgulas em pontos para serem lidos adequadamente
     df['taxa'] = pd.to_numeric(df['taxa'], errors='coerce') # Garantindo que é formato float
-    df['bairro']=df['bairro'].str.replace('ã','a',regex=True).replace('ç','c',regex=True)
-    df['data_entregas'] = pd.to_datetime(df['data_entregas'], dayfirst=True)
+    df['bairro']=df['bairro'].str.replace('ã','a',regex=True).replace('ç','c',regex=True) #tirando acento do ã e o traço do ç
+    df['data_entregas'] = pd.to_datetime(df['data_entregas'], dayfirst=True) #convertendo datas em datetime
 
     df['bairro'] = df['bairro'].str.strip().str.lower() # Padronizando os nomes das rotas por garantia
     df['bairro'] = df['bairro'].str.title() #aqui deixa a primeira letra maiuscula da palavra padronizado para todos
@@ -49,8 +50,10 @@ def limpando_dados(df): #criando funcao para facilitar o trabalho do processamen
                                                                             #Removendo entregas sem valor registrado (0)
 #fazendo um try com os dados do mes de março e abril passando pela funçao de limpenza
 try:
+    df_maio = limpando_dados(df_maio)
     df_a = limpando_dados(df_a)
     df_m = limpando_dados(df_m) #dataframe recebe os valores da funcao
+    print(df_maio)
     print(df_a)
     print(df_m) #exibindo o dataframe para ver os dados formatados e limpos
     print("Dados limpos e prontos!")
@@ -84,9 +87,9 @@ ORDER BY quantidade_entregas DESC;
 
 try: #funçao para validar se o codigo dentro desse parametro vai rodar sem dar erro e se der erro sera mais facil viazualizar onde esta o problema
         
-    df_consolidado = pd.concat([df_m, df_a], ignore_index=True) #juntando os dois dataframes com a funçao concat
+    df_consolidado = pd.concat([df_m, df_a,df_maio], ignore_index=True) #juntando os dois dataframes com a funçao concat
     
-    traducao_meses = {'March': 'Março','April': 'Abril','June': 'Junho'} #dicionario com os meses e suas traduçoes para pt-br
+    traducao_meses = {'March': 'Março','April': 'Abril','May':'Maio', 'June': 'Junho'} #dicionario com os meses e suas traduçoes para pt-br
     
     df_linha = df_consolidado.groupby(['data_entregas']).agg({ 
         'taxa': 'sum', 
