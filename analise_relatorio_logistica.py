@@ -8,7 +8,7 @@ import seaborn as sns #biblioteca que deixa os graficos mais bonitos
 
 #usando try/except para caso de erro em alguma parte
 try:
-    df_maio = pd.read_excel('relatorio_maio.xlsx', sep=';')
+    df_maio = pd.read_csv('relatorio_maio.csv', sep=';')
     df_a = pd.read_csv('relatorio_abril.csv', sep=';')
     df_m= pd.read_csv('relatorio_marco.csv', sep=';')#lendo o arquivo csv e transformando em data frame
     
@@ -128,9 +128,10 @@ try: #funçao para validar se o codigo dentro desse parametro vai rodar sem dar 
 except Exception as e:
     
     print(f"Erro no gráfico de lucro por hora: {e}")
+
+
 with sqlite3.connect('logistica_pessoal.db') as conn:
 
-    
     df_consolidado.to_sql('entregas', conn, if_exists='replace', index=False)
     df_volume = pd.read_sql(query_volume_bairro, conn)
     df_top = pd.read_sql(query_top_dia, conn)#variavel que recebeu os dados da query do top do dia e a conexao com o banco de dados

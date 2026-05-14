@@ -1,0 +1,10 @@
+﻿data entregas;bairro;   taxa   ;pedido coletado;pedido entregue;rota
+01/05/2026;capao raso; R$ 6,00 ;19:11;19:23;1
+01/05/2026;agua verde; R$ 5,00 ;19:46;19:56;2
+01/05/2026;agua verde; R$ 5,00 ;19:49;20:03;3
+01/05/2026;vila izabel; R$ 5,00 ;20:09;20:18;4
+01/05/2026;novo mundo; R$ 6,00 ;20:31;20:48;5
+01/05/2026;CIC; R$ 8,00 ;20:31;20:57;5
+01/05/2026;novo mundo; R$ 5,00 ;20:31;20:43;5
+01/05/2026;campo cumprido; R$ 7,00 ;21:17;21:38;6
+01/05/2026;portao; R$ 5,00 ;21:17;21:27;6
