@@ -13,7 +13,7 @@ try:
     df_m= pd.read_csv('relatorio_marco.csv', sep=';')#lendo o arquivo csv e transformando em data frame
     
 except FileNotFoundError: #erro de arquivo nao encontrado
-    print("Erro: O arquivo 'relatorio_abril.csv' não foi encontrado!")
+    print("Erro: Algum arquivo csv não foi encontrado!")
     exit() # encerra o script
 except Exception as excecao: #erro de excecao
     print(f"Ocorreu um erro inesperado ao ler o arquivo: {excecao}")
@@ -65,23 +65,7 @@ except Exception as excecao: #mensagem de erro caso de erro no processo de limpe
     print(f"Erro na limpeza dos dados: {excecao}")
 
 
-query_top_dia = """
-    SELECT 
-        data_entregas, 
-        SUM(taxa) AS lucro_total, 
-        COUNT(*) AS quantidade_total
-    FROM entregas
-    GROUP BY data_entregas;
-    """
 
-query_volume_bairro = """
-SELECT 
-    bairro, 
-    COUNT(*) AS quantidade_entregas
-FROM entregas
-GROUP BY bairro
-ORDER BY quantidade_entregas DESC;
-"""#filtrando a contagem de entregas em cada respectivo bairro no mes
 
 
 
@@ -89,7 +73,7 @@ try: #funçao para validar se o codigo dentro desse parametro vai rodar sem dar 
         
     df_consolidado = pd.concat([df_m, df_a,df_maio], ignore_index=True) #juntando os dois dataframes com a funçao concat
     
-    traducao_meses = {'March': 'Março','April': 'Abril','May':'Maio', 'June': 'Junho'} #dicionario com os meses e suas traduçoes para pt-br
+    traducao_meses = {'March': 'Março','April': 'Abril','May': 'Maio','June': 'Junho'} #dicionario com os meses e suas traduçoes para pt-br
     
     df_linha = df_consolidado.groupby(['data_entregas']).agg({ 
         'taxa': 'sum', 
@@ -109,12 +93,12 @@ try: #funçao para validar se o codigo dentro desse parametro vai rodar sem dar 
     sns.set_theme(style="whitegrid")
 
     sns.lineplot(data=df_linha, x='dia_do_mes', y='lucro_por_hora', hue='mes', #grafico de linha usando como base os dados do dia do mes e o lucro por hora de acordo com os dois meses
-                 marker='o', linewidth=2.5, palette={'Março': 'blue', 'Abril': 'orange'})
+                 marker='o', linewidth=2.5, palette={'Março': 'blue', 'Abril': 'orange', 'Maio': 'red'})
 
    
     plt.axhline(y=20, color='red', linestyle='--', alpha=0.5, label='Meta R$ 20/h')
 
-    plt.title('Lucro por Hora Trabalhada (Março vs Abril)', fontsize=14, fontweight='bold')
+    plt.title('Lucro por Hora Trabalhada (Março vs Abril vs Maio)', fontsize=14, fontweight='bold')
     plt.xlabel('Dia do Mês')
     plt.ylabel('R$ por Hora')
     plt.xticks(range(1, 32))
@@ -129,6 +113,23 @@ except Exception as e:
     
     print(f"Erro no gráfico de lucro por hora: {e}")
 
+query_top_dia = """
+    SELECT 
+        data_entregas, 
+        SUM(taxa) AS lucro_total, 
+        COUNT(*) AS quantidade_total
+    FROM entregas
+    GROUP BY data_entregas;
+    """
+
+query_volume_bairro = """
+SELECT 
+    bairro, 
+    COUNT(*) AS quantidade_entregas
+FROM entregas
+GROUP BY bairro
+ORDER BY quantidade_entregas DESC;
+"""#filtrando a contagem de entregas em cada respectivo bairro no mes
 
 with sqlite3.connect('logistica_pessoal.db') as conn:
 
@@ -150,12 +151,13 @@ else:
         
         df_marco = df_top[df_top['mes_aux'] == 3].copy().sort_values('data_entregas') #dataframe março quando o numero do mes for igual a 3 organizado por data
         df_abril = df_top[df_top['mes_aux'] == 4].copy().sort_values('data_entregas')#dataframe abril quando o numero do mes for igual a 4 organizado por data
-
+        df_maio = df_top[df_top['mes_aux']==5].copy().sort_values('data_entregas')
         
         df_marco['data_formatada'] = df_marco['data_entregas'].dt.strftime('%d/%m') #dataframe março com coluna data formatada com extraçao apenas de dia e mes
         df_abril['data_formatada'] = df_abril['data_entregas'].dt.strftime('%d/%m') #dataframe março com coluna data formatada com extraçao apenas de dia e mes
+        df_maio['data_formatada'] = df_maio['data_entregas'].dt.strftime('%d/%m') 
 
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 12))
+        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(15, 12))
         sns.set_theme(style="darkgrid")
         #cada barra a ser exibida vai receber como parametro a data formatada e o lucro daquele dia
         barras_m = sns.barplot(data=df_marco, x='data_formatada', y='lucro_total', palette="viridis", ax=ax1, hue='data_formatada', legend=False)
@@ -182,6 +184,21 @@ else:
         ax2.set_title('LUCRO TOTAL DIÁRIO - ABRIL/2026', fontsize=12, fontweight='bold')
         ax2.set_ylabel('Lucro Total (R$)')
         ax2.set_xlabel('')
+
+
+        barras_maio = sns.barplot(data=df_maio, x='data_formatada', y='lucro_total', palette="viridis", ax=ax3, hue='data_formatada', legend=False)
+        
+        #para cada barra, lucro, quantidade em um compactado da variavel barras, o lucro total no dataframe e a quantidade total no dataframe
+        for barra, lucro, qtd in zip(barras_maio.patches, df_maio['lucro_total'], df_maio['quantidade_total']):
+            ax3.annotate(f'R$ {int(lucro)}\n({qtd} entregas)', #nota em cima da barra mostrando o lucro e quantidade de entregas na barra
+                        xy=(barra.get_x() + barra.get_width()/2, barra.get_height()),
+                        xytext=(0, 2), textcoords="offset points",
+                        ha='center', va='bottom', fontsize=7, fontweight='bold', color='black')
+
+        ax3.set_title('LUCRO TOTAL DIÁRIO - MAIO/2026', fontsize=12, fontweight='bold') #titulo do grafico
+        ax3.set_ylabel('Lucro Total (R$)') #descriçao lateral do grafico
+        ax3.set_xlabel('')
+
         sns.despine()# Remove as bordas desnecessárias
         plt.tight_layout()
         plt.subplots_adjust(hspace=0.3) #ajuste de tamanho do espaço entre o grafico de cima e o debaixo para nao se sobreporem
