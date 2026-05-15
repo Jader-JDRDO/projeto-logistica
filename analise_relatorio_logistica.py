@@ -195,7 +195,7 @@ else:
                         xytext=(0, 2), textcoords="offset points",
                         ha='center', va='bottom', fontsize=7, fontweight='bold', color='black')
 
-        ax3.set_title('LUCRO TOTAL DIÁRIO - MAIO/2026', fontsize=12, fontweight='bold') #titulo do grafico
+        ax3.set_title('LUCRO TOTAL DIÁRIO - MAIO/2026', fontsize=11, fontweight='bold') #titulo do grafico
         ax3.set_ylabel('Lucro Total (R$)') #descriçao lateral do grafico
         ax3.set_xlabel('')
 
