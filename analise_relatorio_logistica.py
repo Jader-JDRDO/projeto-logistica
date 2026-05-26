@@ -24,7 +24,7 @@ except Exception as excecao: #erro de excecao
 def limpando_dados(df): #criando funcao para facilitar o trabalho do processamento
 
     df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')#tirando espaços e formatando as strings das colunas para caixa baixa #tranformando espaços entre as palavras em _ para melhor gerenciamento de variaveis
-    print(df.columns) #exibindo colunas para garantir a formataçao
+
 
     df['taxa'] = df['taxa'].str.replace(r'[R\$\s]', '', regex=True).replace(',', '.', regex=True) #tirando o R$ para o python ler como numero e tranformando virgulas em pontos para serem lidos adequadamente
     df['taxa'] = pd.to_numeric(df['taxa'], errors='coerce') # Garantindo que é formato float
@@ -53,9 +53,7 @@ try:
     df_maio = limpando_dados(df_maio)
     df_a = limpando_dados(df_a)
     df_m = limpando_dados(df_m) #dataframe recebe os valores da funcao
-    print(df_maio)
-    print(df_a)
-    print(df_m) #exibindo o dataframe para ver os dados formatados e limpos
+    #exibindo o dataframe para ver os dados formatados e limpos
     print("Dados limpos e prontos!")
    
  
