@@ -1,5 +1,6 @@
 # projeto-logistica
-Este projeto automatiza a análise de performance de entregas realizadas em Curitiba-PR com objetivo de fazer R$ 20,00/h por dia trabalhado. Ele transforma dados brutos de rotas diárias (arquivos CSV) em um banco de dados estruturado, permitindo a extração de métricas de lucro e volume por região.
+Este projeto automatiza a análise de performance de entregas realizadas em Curitiba-PR com objetivo de fazer R$ 20,00/Hora por dia trabalhado. Ele transforma dados brutos de rotas diárias (arquivos CSV) em um banco de dados estruturado, permitindo a extração de métricas de lucro e volume por região.
+
 Tecnologias Utilizadas
 
     Linguagem: Python 3.13
@@ -32,16 +33,18 @@ Funcionalidades do Projeto:
 
 Visualizações Geradas
 
-O script gera automaticamente dois arquivos de imagem para relatórios:
+O script gera automaticamente quatro arquivos de imagem para relatórios:
 
-    lucro_total_diario_comparativo.png: Comparação de faturamento real entre os meses (Março vs Abril).
+    lucro_total_diario_comparativo.png: Comparação de faturamento real entre os meses (Março vs Abril vs Maio).
     
 
-    quantidade_entregas_bairro.png: Ranking de volume por região.
+    quantidade_entregas_bairro.png: Ranking de volume por região em cada dia e qual o faturamento em cada um.
     
 
     eficiencia_dia_semana.png: Médias de ganho por hora, facilitando o planejamento de escalas.
     
+
+    nome aqui: e por fim um png mostrando o volumes de entregas em cada cada bairro de maneira crescente de acordo com a frequência de pedidos
     
 Como Executar o Projeto
 
@@ -51,14 +54,16 @@ Como Executar o Projeto
         pip install pandas matplotlib seaborn
         (o sqlite3 ja vem no python por isso ja vai ser importado automaticamente)
 
-    Coloque o arquivos relatorio_marco.csv e relatorio_abril.csv na pasta raiz do projeto.
+    Coloque o arquivos relatorio_marco.csv, relatorio_abril.csv e relatorio_maio.csv na pasta raiz do projeto.
 
     Execute o script principal:
         python "analise_relatorio_logistica.py"
 
 
+Depois de executar vai dar boa em tudo espero ;)
+
+
 Sobre o Desenvolvedor
 
-Profissional em transição de carreira para Análise de Dados, com background técnico em TI e experiência prática no setor logístico. Este projeto une o conhecimento de backend (Python/SQL) com a vivência operacional para criar soluções de otimização financeira.
+Profissional em transição de carreira para area de Análise de Dados, com background técnico em TI e experiência prática no setor logístico. Este projeto une o conhecimento de backend (Python/SQL) com a vivência operacional para criar soluções de otimização financeira.
 
-depois de executar vai dar boa em tudo espero ;)
