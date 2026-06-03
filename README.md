@@ -44,7 +44,7 @@ O script gera automaticamente quatro arquivos de imagem para relatórios:
     eficiencia_dia_semana.png: Médias de ganho por hora, facilitando o planejamento de escalas.
     
 
-    e por fim um png mostrando o volumes de entregas em cada cada bairro de maneira crescente de acordo com a frequência de pedidos
+    nome aqui: e por fim um png mostrando o volumes de entregas em cada cada bairro de maneira crescente de acordo com a frequência de pedidos
     
 Como Executar o Projeto
 
@@ -61,6 +61,8 @@ Como Executar o Projeto
 
 
 Depois de executar vai dar boa em tudo espero ;)
+
+
 Sobre o Desenvolvedor
 
 Profissional em transição de carreira para area de Análise de Dados, com background técnico em TI e experiência prática no setor logístico. Este projeto une o conhecimento de backend (Python/SQL) com a vivência operacional para criar soluções de otimização financeira.
