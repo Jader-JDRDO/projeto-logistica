@@ -38,13 +38,13 @@ O script gera automaticamente quatro arquivos de imagem para relatórios:
     lucro_total_diario_comparativo.png: Comparação de faturamento real entre os meses (Março vs Abril vs Maio).
     
 
-    quantidade_entregas_bairro.png: Ranking de volume por região em cada dia e qual o faturamento em cada um.
+    quantidade_entregas_bairro.png: Ranking total de volume nos bairros de CURITIBA - PR .
     
 
-    eficiencia_dia_semana.png: Médias de ganho por hora, facilitando o planejamento de escalas.
+    eficiencia_dia_semana.png: Médias de lucro por hora, facilitando o planejamento de escalas.
     
 
-    nome aqui: e por fim um png mostrando o volumes de entregas em cada cada bairro de maneira crescente de acordo com a frequência de pedidos
+    lucro_por_hora_diario.png: Lucro médio de entregas em cada dia de acordo com a meta de lucro/hora 
     
 Como Executar o Projeto
 
