@@ -46,6 +46,22 @@ O script gera automaticamente quatro arquivos de imagem para relatórios:
 
     lucro_por_hora_diario.png: Lucro médio de entregas em cada dia de acordo com a meta de lucro/hora 
     
+
+Conclusão
+    Houve diversas alteraçoes de horários e taxas durante esse periodo de tres meses variando de 5 a a 8 horas por dia de trabalho.
+    No entanto, ao fazer uma visualização geral ainda é notavel que o bairro agua verde e portao sao os bairros com maior volume de
+    pedidos comparado aos demais, porem os mais rentavel para bater a meta de R$ 20,00 Reais de lucro por hora seriam os bairros de CIC,
+    Batel, Rebouças e Novo Mundo/Capão Raso, pois, nao sao demasiados distantes dos restaurantes e as rotas de ida e volta são de facil
+    acesso por conta das viás rápidas alem do valor da taxa nesses bairros contribuirem para em diversos dias bater a meta de lucro
+    diario por hora comparado com os bairros de taxa mínima e bem próximos como Agua Verde, Santa Quiteria, Guaira e Vila Izabel.
+    Contudo, os dias que mais geravam lucro eram majoritariamente Sexta-Feira e Sabado no qual o volume de pedidos criavam mais rotas 
+    e contribuiram para ultrapassar a meta de lucro por hora. Em contra-partida, os demais aconteciam o completo oposto em relação a
+    a volumes de entregas e rotas ucrativas disponiveis.
+    Ao fim da analise, conclui-se que bairros com facil acesso a viás rápidas ou avenidas corroboram para a eficiência das entregas
+    independente do dia da semana, mas para bater a meta de lucro, o cenario ideal seria focar em rotas para bairros não tao distantes
+    e com facil acesso.
+    
+
 Como Executar o Projeto
 
     Certifique-se de ter o Python 3.10+ instalado.
