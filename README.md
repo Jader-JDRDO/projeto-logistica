@@ -48,18 +48,24 @@ O script gera automaticamente quatro arquivos de imagem para relatórios:
     
 
 Conclusão
-    Houve diversas alteraçoes de horários e taxas durante esse periodo de tres meses variando de 5 a a 8 horas por dia de trabalho.
-    No entanto, ao fazer uma visualização geral ainda é notavel que o bairro agua verde e portao sao os bairros com maior volume de
-    pedidos comparado aos demais, porem os mais rentavel para bater a meta de R$ 20,00 Reais de lucro por hora seriam os bairros de CIC,
-    Batel, Rebouças e Novo Mundo/Capão Raso, pois, nao sao demasiados distantes dos restaurantes e as rotas de ida e volta são de facil
-    acesso por conta das viás rápidas alem do valor da taxa nesses bairros contribuirem para em diversos dias bater a meta de lucro
-    diario por hora comparado com os bairros de taxa mínima e bem próximos como Agua Verde, Santa Quiteria, Guaira e Vila Izabel.
-    Contudo, os dias que mais geravam lucro eram majoritariamente Sexta-Feira e Sabado no qual o volume de pedidos criavam mais rotas 
-    e contribuiram para ultrapassar a meta de lucro por hora. Em contra-partida, os demais aconteciam o completo oposto em relação a
-    a volumes de entregas e rotas ucrativas disponiveis.
-    Ao fim da analise, conclui-se que bairros com facil acesso a viás rápidas ou avenidas corroboram para a eficiência das entregas
-    independente do dia da semana, mas para bater a meta de lucro, o cenario ideal seria focar em rotas para bairros não tao distantes
-    e com facil acesso.
+   Durante o período de três meses analisado, houve variações na jornada diária de trabalho (oscilando entre 5 a 8 horas por dia) 
+   e alteração nas taxas. A análise de dados gerou os seguintes *insights*:
+
+    Volume vs. Rentabilidade:
+        Embora os bairros Água Verde e Portão concentrem o maior volume absoluto de pedidos, eles operam com taxas mínimas devido 
+        à proximidade dos restaurantes. 
+
+    Zonas de Alta Performance:
+        Para atingir a meta de R$ 20,00/hora (EPH), as regiões mais rentáveis identificadas foram CIC, Batel, Rebouças e 
+        Novo Mundo/Capão Raso. Apesar de não serem colados aos centros de coleta, o valor elevado da taxa dessas regiões somado ao
+        fácil acesso por vias rápidas e avenidas estruturais otimiza o tempo de deslocamento de ida e volta, elevando a margem de lucro.
+
+    Sazonalidade Temporal:
+        Os dias com maior pico de faturamento e densidade de rotas lucrativas foram majoritariamente as Sextas-feiras e Sábados.
+        Nos demais dias da semana, a escassez de volume impacta diretamente a eficiência das rotas disponíveis.
+
+    Conclusão Geral: O sucesso operacional da rota não depende apenas da distância, mas sim da conectividade urbana. Bairros com acesso
+    direto a vias rápidas corroboram para a velocidade de entrega e eficiência do EPH, mitigando o impacto de dias com menor volume de pedidos.
     
 
 Como Executar o Projeto
