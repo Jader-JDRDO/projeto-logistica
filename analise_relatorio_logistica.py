@@ -5,21 +5,22 @@ import pandas as pd #importando biblioteca pandas para ler o arquivo csv
 import sqlite3 #importando a conexao sql para criar um banco de dados
 import matplotlib.pyplot as plt #importando a biblioteca matplot para exibir relatorios em forma de grafico 
 import seaborn as sns #biblioteca que deixa os graficos mais bonitos
+import pathlib
 
 
-
-
+pasta = pathlib.Path('relatorios')
+dicionarios_df= {}
+for arquivo in pasta.iterdir():
+    if arquivo.is_file() and arquivo.suffix == '.csv':
 #usando try/except para caso de erro em alguma parte
-try:
-    df_maio = pd.read_csv('relatorio_maio.csv', sep=';')
-    df_a = pd.read_csv('relatorio_abril.csv', sep=';')
-    df_m= pd.read_csv('relatorio_marco.csv', sep=';')#lendo o arquivo csv e transformando em data frame
-    
-except FileNotFoundError: #erro de arquivo nao encontrado
-    print("Erro: Algum arquivo csv não foi encontrado!")
-    exit() # encerra o script
-except Exception as excecao: #erro de excecao
-    print(f"Ocorreu um erro inesperado ao ler o arquivo: {excecao}")
+        try:
+            nome_df = f'df_'+arquivo.stem
+            dicionarios_df[nome_df] = pd.read_csv(arquivo, sep=';')
+        #lendo o arquivo csv e transformando em data frame
+            
+        except FileNotFoundError: #erro de arquivo nao encontrado
+            print("Erro: Algum arquivo csv não foi encontrado!")
+            continue # encerra o script
 
 #Carregando os dados
 
@@ -52,67 +53,69 @@ def limpando_dados(df): #criando funcao para facilitar o trabalho do processamen
                                                                             #só as que tiverem mais doque 1 min de tempo entre a coleta e a entrega
                                                                             #Removendo entregas sem valor registrado (0)
 #fazendo um try com os dados do mes de março e abril passando pela funçao de limpenza
-try:
-    df_maio = limpando_dados(df_maio)
-    df_a = limpando_dados(df_a)
-    df_m = limpando_dados(df_m) #dataframe recebe os valores da funcao
-    #exibindo o dataframe para ver os dados formatados e limpos
-    print("Dados limpos e prontos!")
+
+for nome_df, df_bruto in dicionarios_df.items():
+    try:
+        # Aplica a sua função e salva por cima do antigo
+        dicionarios_df[nome_df] = limpando_dados(df_bruto)
+        #dataframe recebe os valores da funcao
+        #exibindo o dataframe para ver os dados formatados e limpos
+        print(f"Dados limpos e prontos do arquivo {nome_df}!")
    
  
-except KeyError as erro: #mensagem de erro caso nao encontre uma coluna no arquivo principal
-    print(f"Erro: A coluna {erro} não existe no arquivo original!")
-except Exception as excecao: #mensagem de erro caso de erro no processo de limpeza de dados
-    print(f"Erro na limpeza dos dados: {excecao}")
+    except KeyError as erro: #mensagem de erro caso nao encontre uma coluna no arquivo principal
+        print(f"Erro: A coluna {erro} não existe no arquivo original!")
+    except Exception as excecao: #mensagem de erro caso de erro no processo de limpeza de dados
+        print(f"Erro na limpeza dos dados: {excecao}")
 
 
 
 
 
 
+    
 try: #funçao para validar se o codigo dentro desse parametro vai rodar sem dar erro e se der erro sera mais facil viazualizar onde esta o problema
         
-    df_consolidado = pd.concat([df_m, df_a,df_maio], ignore_index=True) #juntando os dois dataframes com a funçao concat
-    
-    traducao_meses = {'March': 'Março','April': 'Abril','May': 'Maio','June': 'Junho'} #dicionario com os meses e suas traduçoes para pt-br
-    
-    df_linha = df_consolidado.groupby(['data_entregas']).agg({ 
-        'taxa': 'sum', 
-        'tempo_entrega_min': 'sum'
-    }).reset_index()
+                df_consolidado = pd.concat(dicionarios_df.values(), ignore_index=True) #juntando os dois dataframes com a funçao concat
+                
+                traducao_meses = {'March': 'Março','April': 'Abril','May': 'Maio','June': 'Junho'} #dicionario com os meses e suas traduçoes para pt-br
+                
+                df_linha = df_consolidado.groupby(['data_entregas']).agg({ 
+                    'taxa': 'sum', 
+                    'tempo_entrega_min': 'sum'
+                }).reset_index()
 
 
-    df_linha['lucro_por_hora'] = df_linha['taxa'] / (df_linha['tempo_entrega_min'] / 60)#nova coluna onde cada linha vai ser a conta do lucro por hora de acordo com o respectivo dado
-    
-    # Tratamento de datas e nomes
+                df_linha['lucro_por_hora'] = df_linha['taxa'] / (df_linha['tempo_entrega_min'] / 60)#nova coluna onde cada linha vai ser a conta do lucro por hora de acordo com o respectivo dado
+                
+                # Tratamento de datas e nomes
 
-    #nova coluna mes que vai receber somente a extraçao do mes do data entregas de acordo com  respectivo dado na linha
-    df_linha['mes'] = df_linha['data_entregas'].dt.month_name().map(traducao_meses)#apos a extraçao recebe a descriçao de acordo com o dicionario de traduçao de meses
-    df_linha['dia_do_mes'] = df_linha['data_entregas'].dt.day#nova coluna dia do mes que vai receber a extraçao do dia do mes de acordo com o respectivo dado
+                #nova coluna mes que vai receber somente a extraçao do mes do data entregas de acordo com  respectivo dado na linha
+                df_linha['mes'] = df_linha['data_entregas'].dt.month_name().map(traducao_meses)#apos a extraçao recebe a descriçao de acordo com o dicionario de traduçao de meses
+                df_linha['dia_do_mes'] = df_linha['data_entregas'].dt.day#nova coluna dia do mes que vai receber a extraçao do dia do mes de acordo com o respectivo dado
 
-    plt.figure(figsize=(12, 6))
-    sns.set_theme(style="whitegrid")
+                plt.figure(figsize=(12, 6))
+                sns.set_theme(style="whitegrid")
 
-    sns.lineplot(data=df_linha, x='dia_do_mes', y='lucro_por_hora', hue='mes', #grafico de linha usando como base os dados do dia do mes e o lucro por hora de acordo com os dois meses
-                 marker='o', linewidth=2.5, palette={'Março': 'blue', 'Abril': 'orange', 'Maio': 'red'})
+                sns.lineplot(data=df_linha, x='dia_do_mes', y='lucro_por_hora', hue='mes', #grafico de linha usando como base os dados do dia do mes e o lucro por hora de acordo com os dois meses
+                            marker='o', linewidth=2.5, palette={'Março': 'blue', 'Abril': 'orange', 'Maio': 'red'})
 
-   
-    plt.axhline(y=20, color='red', linestyle='--', alpha=0.5, label='Meta R$ 20/h')
+            
+                plt.axhline(y=20, color='red', linestyle='--', alpha=0.5, label='Meta R$ 20/h')
 
-    plt.title('Lucro por Hora Trabalhada (Março vs Abril vs Maio)', fontsize=14, fontweight='bold')
-    plt.xlabel('Dia do Mês')
-    plt.ylabel('R$ por Hora')
-    plt.xticks(range(1, 32))
-    plt.grid(True, alpha=0.3)
-    plt.legend(title='Mês')
+                plt.title('Lucro por Hora Trabalhada (Março vs Abril vs Maio)', fontsize=14, fontweight='bold')
+                plt.xlabel('Dia do Mês')
+                plt.ylabel('R$ por Hora')
+                plt.xticks(range(1, 32))
+                plt.grid(True, alpha=0.3)
+                plt.legend(title='Mês')
 
-    plt.tight_layout()
-    plt.savefig('lucro_por_hora_diario.png')
-    plt.show()
+                plt.tight_layout()
+                plt.savefig('lucro_por_hora_diario.png')
+                plt.show()
 
-except Exception as e:
-    
-    print(f"Erro no gráfico de lucro por hora: {e}")
+except Exception as e:     
+        print(f"Erro no gráfico de lucro por hora: {e}")
 
 query_top_dia = """
     SELECT 
@@ -146,15 +149,14 @@ query_tempo = """
 """
 
 with sqlite3.connect('logistica_pessoal.db') as conn:
-
     df_consolidado.to_sql('entregas', conn, if_exists='replace', index=False)
+    df_eficiencia_bairros = pd.read_sql_query(query_tempo, conn)
     df_volume = pd.read_sql(query_volume_bairro, conn)
     df_top = pd.read_sql(query_top_dia, conn)#variavel que recebeu os dados da query do top do dia e a conexao com o banco de dados
     #variavel que recebeu os dados da query do volume do bairro no mes e a conexao com o banco de dados
         #o with fecha a conexao com o banco de dados automaticamente, pois as variaveis anteriores ja armazenaram os dados que preciso para exibir os graficos
-    df_eficiencia_bairros = pd.read_sql_query(query_tempo, conn)
+    
    
-print(df_eficiencia_bairros)
 if df_top.empty:
     print("Atenção: Consultas SQL não retornaram dados.") #mensagem de erro caso o dataframe 'top' esteja vazio
 else:
@@ -309,3 +311,4 @@ try: #usando funçao para testar possivel falha no processo
 
 except Exception as e:
     print(f"Erro na análise de eficiência semanal: {e}")#mensagem de erro caso nao aconteça o processo acima
+

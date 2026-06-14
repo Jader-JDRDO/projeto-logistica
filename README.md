@@ -1,11 +1,16 @@
-# projeto-logistica
-Este projeto automatiza a análise de performance de entregas realizadas em Curitiba-PR com objetivo de fazer R$ 20,00/Hora por dia trabalhado. Ele transforma dados brutos de rotas diárias (arquivos CSV) em um banco de dados estruturado, permitindo a extração de métricas de lucro e volume por região.
+# 🏍️ Pipeline de Automação e Análise de Logística Pessoal
+
+
+Este projeto implementa um pipeline de **ETL (Extract, Transform, Load)** automatizado para monitorar, estruturar e analisar a performance financeira e operacional de entregas expressas na cidade de Curitiba-PR.
+O objetivo central do projeto é avaliar a viabilidade de atingir a meta operacional de **R$ 20,00 por hora trabalhada** através da otimização de rotas e análise regional.
 
 Tecnologias Utilizadas
 
     Linguagem: Python 3.13
 
     Manipulação de Dados: Pandas
+
+    Gerenciamento de Arquivos: Pathlib (Manipulação dinâmica de caminhos do OS)
 
     Banco de Dados: SQLite3
 
@@ -17,55 +22,59 @@ Tecnologias Utilizadas
 Funcionalidades do Projeto:
 
     ETL (Extract, Transform, Load):
-        Limpeza automática de strings, normalização de bairros e conversão de valores monetários.
+        Extração (Extract): Varredura automática da pasta `relatorios/` capturando apenas arquivos com a extensão `.csv`.
 
-    Limpeza:
-        Padronização de nomes da colunas, Tratamento de strings, Calculo do tempo de entrega
+        Transformação (Transform): Normalização de colunas (remoção de espaços em branco, strings em caixa baixa e substituição por `_`).
+
+        Limpeza de caracteres monetários (`R$`) via Regex e conversão para tipo numérico (`float`).
+
+        Tratamento de acentuação e padronização de strings de texto utilizando formato `Title Case` para os bairros de Curitiba.
+
+        Conversão e formatação de strings temporais para objetos `datetime`.         
+
+        Criação de Feature: Cálculo do tempo líquido de entrega em minutos (`pedido_entregue` - `pedido_coletado`).
+
+        Filtro de Outliers: Expulsão automática do dataset de registros com tempos negativos, zerados ou taxas inválidas (`.dropna()`).
+
+        Carga (Load): Consolidação das tabelas mensais (`pd.concat`) e persistência automatizada no arquivo `logistica_pessoal.db`.
+
 
     SQL:
         Agrupamento de volume mensal de pedidos e indeficaçao do melhor bairro
 
-    Análise Temporal:
-        Cálculo de tempo real de entrega (Coleta vs Entrega) e produtividade por dia da semana.
     
     Relatório Visual:
         Geração de gráficos comparativos de faturamento e eficiência (Earning Per Hour - EPH).
 
-Visualizações Geradas
 
-O script gera automaticamente quatro arquivos de imagem para relatórios:
-
-    lucro_total_diario_comparativo.png: Comparação de faturamento real entre os meses (Março vs Abril vs Maio).
-    
-
-    quantidade_entregas_bairro.png: Ranking total de volume nos bairros de CURITIBA - PR .
-    
-
-    eficiencia_dia_semana.png: Médias de lucro por hora, facilitando o planejamento de escalas.
-    
-
-    lucro_por_hora_diario.png: Lucro médio de entregas em cada dia de acordo com a meta de lucro/hora 
-    
 
 Conclusão
    Durante o período de três meses analisado, houve variações na jornada diária de trabalho (oscilando entre 5 a 8 horas por dia) 
    e alteração nas taxas. A análise de dados gerou os seguintes *insights*:
 
-    Volume vs. Rentabilidade:
-        Embora os bairros Água Verde e Portão concentrem o maior volume absoluto de pedidos, eles operam com taxas mínimas devido 
-        à proximidade dos restaurantes. 
+        lucro_total_diario_comparativo.png: Comparação de faturamento real entre os meses (Março vs Abril vs Maio).
+            Gráfico demostrativo da variaçao de lucro de acordo com as entregas feitas e destacando que mesmo que haja um volume parecido
+            de entregas de um dia para o outro, ainda sim, pode-se ter uma diferença gritante no lucro ao final do dia.
+        
 
-    Zonas de Alta Performance:
-        Para atingir a meta de R$ 20,00/hora (EPH), as regiões mais rentáveis identificadas foram CIC, Batel, Rebouças e 
-        Novo Mundo/Capão Raso. Apesar de não serem colados aos centros de coleta, o valor elevado da taxa dessas regiões somado ao
-        fácil acesso por vias rápidas e avenidas estruturais otimiza o tempo de deslocamento de ida e volta, elevando a margem de lucro.
+        quantidade_entregas_bairro.png: Ranking total de volume nos bairros de CURITIBA - PR .
+            Embora bairros centrais e populosos como Água Verde e Portão concentrem a maior volumetria absoluta de pedidos devido à alta densidade de restaurantes, eles operam frequentemente com taxas mínimas por causa da curta distância de entrega.
+        
+        tempo_medio_entregas_bairro.png: Analise temporal de Minutos gastos para cada entrega de acordo com o bairro
+            Regiões como CIC, Batel, Rebouças, Novo Mundo e Capão Raso apresentaram o melhor balanço de faturamento por hora (EPH). Mesmo não sendo colados nos principais hubs de coleta, o valor elevado da taxa dessas regiões somado ao fácil acesso por vias rápidas e avenidas estruturais de Curitiba otimiza o tempo de deslocamento de ida e volta, elevando a margem de lucro.
 
-    Sazonalidade Temporal:
-        Os dias com maior pico de faturamento e densidade de rotas lucrativas foram majoritariamente as Sextas-feiras e Sábados.
-        Nos demais dias da semana, a escassez de volume impacta diretamente a eficiência das rotas disponíveis.
+        eficiencia_dia_semana.png: Médias de lucro por hora, facilitando o planejamento de escalas.
+        
+        &
 
-    Conclusão Geral: O sucesso operacional da rota não depende apenas da distância, mas sim da conectividade urbana. Bairros com acesso
-    direto a vias rápidas corroboram para a velocidade de entrega e eficiência do EPH, mitigando o impacto de dias com menor volume de pedidos.
+        lucro_por_hora_diario.png: Lucro médio de entregas em cada dia de acordo com a meta de lucro/hora 
+
+            O faturamento diário atinge seu pico de eficiência majoritariamente às Sextas-feiras e Sábados. Nos demais dias da semana, a oscilação do volume disponível no mercado impacta diretamente a densidade das rotas, exigindo maior tempo de espera entre chamadas.
+    
+    Conclusão Geral: O sucesso da operação logística urbana não depende exclusivamente da menor distância linear, mas sim da conectividade do bairro com eixos viários estruturais que mitigam gargalos de tráfego e maximizam o ganho por hora trabalhada.
+    
+
+
     
 
 Como Executar o Projeto
@@ -74,9 +83,9 @@ Como Executar o Projeto
 
     Instale as dependências necessárias:
         pip install pandas matplotlib seaborn
-        (o sqlite3 ja vem no python por isso ja vai ser importado automaticamente)
+        (o sqlite3 e o pathlib ja vem no python por isso já serão importados automaticamente)
 
-    Coloque o arquivos relatorio_marco.csv, relatorio_abril.csv e relatorio_maio.csv na pasta raiz do projeto.
+    Crie uma pasta chamada relatorios no mesmo diretório do script e insira seus arquivos .csv nela.
 
     Execute o script principal:
         python "analise_relatorio_logistica.py"
@@ -87,5 +96,10 @@ Depois de executar vai dar boa em tudo espero ;)
 
 Sobre o Desenvolvedor
 
-Profissional em transição de carreira para area de Análise de Dados, com background técnico em TI e experiência prática no setor logístico. Este projeto une o conhecimento de backend (Python/SQL) com a vivência operacional para criar soluções de otimização financeira.
+    Jader Oliveira Profissional em transição de carreira para a área de Análise de Dados, unindo um background técnico em Tecnologia da Informação (Instrutor de TI / Informática) com sólida vivência operacional no setor logístico.
+
+    Este projeto reflete a habilidade prática de construir soluções completas que unem engenharia de dados (Python/SQL) com inteligência de negócios para otimização de faturamento e tomada de decisões estratégicas.
+
+    Desenvolvido para fins de estudo, portfólio e otimização de processos operacionais.
+
 
