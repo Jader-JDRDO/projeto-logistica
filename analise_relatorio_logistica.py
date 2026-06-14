@@ -6,6 +6,9 @@ import sqlite3 #importando a conexao sql para criar um banco de dados
 import matplotlib.pyplot as plt #importando a biblioteca matplot para exibir relatorios em forma de grafico 
 import seaborn as sns #biblioteca que deixa os graficos mais bonitos
 
+
+
+
 #usando try/except para caso de erro em alguma parte
 try:
     df_maio = pd.read_csv('relatorio_maio.csv', sep=';')
@@ -39,13 +42,13 @@ def limpando_dados(df): #criando funcao para facilitar o trabalho do processamen
     entrega_dt = pd.to_datetime(df['pedido_entregue'],format ='%H:%M',errors="coerce") #formatando a coluna pedido coletado para o tipo data e definindo que nao de erro quando a hora estiver vazia
 
     diferenca = entrega_dt - coleta_dt#calculo de tempo da coleta ate a entrega
-    df['tempo_entrega(min)'] = diferenca.dt.total_seconds() / 60 #adicionando coluna tempo_entrega para exibir o tempo gasto da coleta ate a entrega formatado em minutos
+    df['tempo_entrega_min'] = diferenca.dt.total_seconds() / 60 #adicionando coluna tempo_entrega para exibir o tempo gasto da coleta ate a entrega formatado em minutos
     df['pedido_coletado'] = coleta_dt.dt.strftime('%H:%M') #padronizando a coluna pedido_coletado em hora e minuto
     df['pedido_entregue'] = entrega_dt.dt.strftime('%H:%M') #padronizando a coluna pedido_entregue em hora e minuto
     
 
     # Removendo erros (entregas negativas)
-    return df[(df['tempo_entrega(min)'] > 0) & (df['taxa'] >0)].dropna()#se no dataframe a entrega tiver tempo negativo ou igual a zero ela nao sera exibida, 
+    return df[(df['tempo_entrega_min'] > 0) & (df['taxa'] >0)].dropna()#se no dataframe a entrega tiver tempo negativo ou igual a zero ela nao sera exibida, 
                                                                             #só as que tiverem mais doque 1 min de tempo entre a coleta e a entrega
                                                                             #Removendo entregas sem valor registrado (0)
 #fazendo um try com os dados do mes de março e abril passando pela funçao de limpenza
@@ -75,11 +78,11 @@ try: #funçao para validar se o codigo dentro desse parametro vai rodar sem dar 
     
     df_linha = df_consolidado.groupby(['data_entregas']).agg({ 
         'taxa': 'sum', 
-        'tempo_entrega(min)': 'sum'
+        'tempo_entrega_min': 'sum'
     }).reset_index()
 
 
-    df_linha['lucro_por_hora'] = df_linha['taxa'] / (df_linha['tempo_entrega(min)'] / 60)#nova coluna onde cada linha vai ser a conta do lucro por hora de acordo com o respectivo dado
+    df_linha['lucro_por_hora'] = df_linha['taxa'] / (df_linha['tempo_entrega_min'] / 60)#nova coluna onde cada linha vai ser a conta do lucro por hora de acordo com o respectivo dado
     
     # Tratamento de datas e nomes
 
@@ -129,6 +132,19 @@ GROUP BY bairro
 ORDER BY quantidade_entregas DESC;
 """#filtrando a contagem de entregas em cada respectivo bairro no mes
 
+query_tempo = """
+    SELECT 
+        bairro,
+        ROUND(AVG(tempo_entrega_min), 2) AS media_tempo_minutos,
+        COUNT(*) AS total_entregas
+    FROM 
+        entregas
+    GROUP BY 
+        bairro
+    ORDER BY 
+        media_tempo_minutos DESC;
+"""
+
 with sqlite3.connect('logistica_pessoal.db') as conn:
 
     df_consolidado.to_sql('entregas', conn, if_exists='replace', index=False)
@@ -136,9 +152,9 @@ with sqlite3.connect('logistica_pessoal.db') as conn:
     df_top = pd.read_sql(query_top_dia, conn)#variavel que recebeu os dados da query do top do dia e a conexao com o banco de dados
     #variavel que recebeu os dados da query do volume do bairro no mes e a conexao com o banco de dados
         #o with fecha a conexao com o banco de dados automaticamente, pois as variaveis anteriores ja armazenaram os dados que preciso para exibir os graficos
-
+    df_eficiencia_bairros = pd.read_sql_query(query_tempo, conn)
    
-
+print(df_eficiencia_bairros)
 if df_top.empty:
     print("Atenção: Consultas SQL não retornaram dados.") #mensagem de erro caso o dataframe 'top' esteja vazio
 else:
@@ -204,6 +220,24 @@ else:
         plt.show() #mostrando o grafico
 
         
+        plt.figure(figsize=(12, 7))#dimensoes do grafico que quero que tenha os dados coletados do top do dia
+
+        # Usando gráfico de barras horizontais (barh) para facilitar a leitura dos nomes
+        barras_a = plt.barh(df_eficiencia_bairros['bairro'], df_eficiencia_bairros['media_tempo_minutos'], color='red') #variavel barras recebendo os dados do bairro e quantidade de entregas para o eixo x e y do grafico
+
+        for barra in barras_a: #para cada barra no dicionario barras
+            tamanho = barra.get_width() #pega o valor da quantidade
+            plt.text(tamanho + 0.3,  #posição x um pouco depois da barra
+                    barra.get_y() + barra.get_height()/2, #posição y no meio da barra
+                    f'{int(tamanho)}', #o texto da quantidade convertida em inteiro)
+                    va='center', fontsize=10, fontweight='bold') #formatacao do texto em centralizado,tamanho 10, negrito
+        plt.title('Tempo Medio de Entregas por Bairro', fontsize=14) #titulo do grafico com tamanho 14
+        plt.xlabel('Média de Minutos Gastos') #parte inferior do grafico com a legenda numero de entregas
+        plt.ylabel('Bairro')#parte lateral do grafico com legenda do bairro
+        plt.tight_layout() #garantindo que todos as informaçoes apareçam no grafico sem areas cortadas ou incompletas
+        plt.savefig('tempo_medio_entregas_bairro.png')#criando uma figura a partir do texto  
+        plt.show()#exibindo a figura formada
+
         total_entregas = df_volume['quantidade_entregas'].sum() #soma das entregas no totais de todos os bairros a partir da variavel que recebeu os dados do volumes
         plt.figure(figsize=(12, 7))#dimensoes do grafico que quero que tenha os dados coletados do top do dia
 
@@ -240,10 +274,10 @@ try: #usando funçao para testar possivel falha no processo
 #calculo de eficiencia nas entregas vai ser o conjunto de acordo com o dia da semana traduzido e a data da entrega com sua respectiva taxa e tempo de entrega
     df_eficiencia = df_consolidado.groupby(['data_entregas', 'dia_semana']).agg({
         'taxa': 'sum',
-        'tempo_entrega(min)': 'sum'
+        'tempo_entrega_min': 'sum'
     }).reset_index()#reset para cada linha fazer o processo
 
-    df_eficiencia['lucro_por_hora'] = df_eficiencia['taxa'] / (df_eficiencia['tempo_entrega(min)'] / 60)
+    df_eficiencia['lucro_por_hora'] = df_eficiencia['taxa'] / (df_eficiencia['tempo_entrega_min'] / 60)
     #coluna eficiencia lucro por hora recebe o agrupamento de eficiencia com a taxa dividido pelo tempo de entrega em minutos
 
 
