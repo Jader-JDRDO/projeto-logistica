@@ -116,7 +116,7 @@ try: #funçao para validar se o codigo dentro desse parametro vai rodar sem dar 
 
                 plt.tight_layout()
                 plt.savefig(pasta_imagens / 'lucro_por_hora_diario.png' )
-                plt.show()
+                #plt.show()
 
 except Exception as e:     
         print(f"Erro no gráfico de lucro por hora: {e}")
@@ -207,7 +207,7 @@ try: #usando funçao para testar possivel falha no processo
                 
                 plt.tight_layout()
                 plt.savefig(pasta_imagens / 'eficiencia_dia_semana.png')
-                plt.show()
+                #plt.show()
 
 
                 if df_top.empty:
@@ -271,7 +271,7 @@ try: #usando funçao para testar possivel falha no processo
                     plt.tight_layout()
                     plt.subplots_adjust(hspace=0.3) #ajuste de tamanho do espaço entre o grafico de cima e o debaixo para nao se sobreporem
                     plt.savefig(pasta_imagens / 'lucro_total_diario_comparativo.png') #salvando grafico como imagem
-                    plt.show() #mostrando o grafico
+                    #plt.show() #mostrando o grafico
 
                 if df_eficiencia_bairros.empty:
                     print("Atenção: Consultas SQL não retornaram dados.") #mensagem de erro caso o dataframe de dados consolidados esteja vazio
@@ -293,7 +293,7 @@ try: #usando funçao para testar possivel falha no processo
                     plt.ylabel('Bairro')#parte lateral do grafico com legenda do bairro
                     plt.tight_layout() #garantindo que todos as informaçoes apareçam no grafico sem areas cortadas ou incompletas
                     plt.savefig(pasta_imagens / 'tempo_medio_entregas_bairro.png')#criando uma figura a partir do texto  
-                    plt.show()#exibindo a figura formada
+                    #plt.show()#exibindo a figura formada
 
                 if df_volume.empty:
                     print("Atenção: Consultas SQL não retornaram dados.") #mensagem de erro caso o dataframe de dados consolidados esteja vazio
@@ -320,13 +320,13 @@ try: #usando funçao para testar possivel falha no processo
                     plt.ylabel('Bairro')#parte lateral do grafico com legenda do bairro
                     plt.tight_layout() #garantindo que todos as informaçoes apareçam no grafico sem areas cortadas ou incompletas
                     plt.savefig(pasta_imagens / 'quantidade_entregas_bairro.png')#criando uma figura a partir do texto  
-                    plt.show()#exibindo a figura formada
+                    #plt.show()#exibindo a figura formada
 
     
 except Exception as e:
     print(f"Erro na análise : {e}")#mensagem de erro caso nao aconteça o processo acima
 
-'''try:
+try:
     plt.close()
     outlook = win32.Dispatch('outlook.application') #nome do gerente da loja
     email = outlook.CreateItem(0)
@@ -352,4 +352,4 @@ except Exception as e:
     print(f"O e-mail foi enviado")
 
 except Exception as e:
-    print(f"Erro ao enviar o e-mail: {e}")#mensagem de erro caso nao aconteça o processo acima'''
+    print(f"Erro ao enviar o e-mail: {e}")#mensagem de erro caso nao aconteça o processo acima
