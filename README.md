@@ -19,6 +19,8 @@ Tecnologias Utilizadas
     Versionamento: Git
 
 
+
+
 Funcionalidades do Projeto:
 
     ETL (Extract, Transform, Load):
@@ -37,6 +39,9 @@ Funcionalidades do Projeto:
         Filtro de Outliers: Expulsão automática do dataset de registros com tempos negativos, zerados ou taxas inválidas (`.dropna()`).
 
         Carga (Load): Consolidação das tabelas mensais (`pd.concat`) e persistência automatizada no arquivo `logistica_pessoal.db`.
+
+        Integração com Outlook: Dispara um processo em segundo plano para criar um item de e-mail formatado em HTML, garantindo uma
+        leitura limpa e profissional.
 
 
     SQL:
@@ -79,7 +84,8 @@ Conclusão
 
 Como Executar o Projeto
 
-    Certifique-se de ter o Python 3.10+ instalado.
+    Certifique-se de ter o Python 3.10+ instalado e ter o aplicativo do Outlook instalado e configurado com seu e-mail para uso comercial
+    
 
     Instale as dependências necessárias:
         pip install pandas matplotlib seaborn
