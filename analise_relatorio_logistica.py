@@ -11,7 +11,7 @@ import win32com.client as win32
 
 pasta_relatorio = pathlib.Path(r'relatorios')
 pasta_relatorio.mkdir(exist_ok=True)
-pasta_imagens = pathlib.Path(r'imagens')
+pasta_imagens = pathlib.Path(r'assets')
 pasta_imagens.mkdir(exist_ok=True)
 dicionarios_df= {}
 for arquivo in pasta_relatorio.iterdir():
