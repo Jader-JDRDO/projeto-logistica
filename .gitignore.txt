@@ -1,3 +1,6 @@
+
+# Ignorar o banco de dados SQLite local
 logistica_pessoal.db
-rota1.csv
-__pycache__/
+
+# Opcional: Ignorar as imagens geradas (já que o README vai mostrar os exemplos)
+imagens/

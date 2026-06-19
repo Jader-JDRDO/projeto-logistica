@@ -60,19 +60,24 @@ Conclusão
         lucro_total_diario_comparativo.png: Comparação de faturamento real entre os meses (Março vs Abril vs Maio).
             Gráfico demostrativo da variaçao de lucro de acordo com as entregas feitas e destacando que mesmo que haja um volume parecido
             de entregas de um dia para o outro, ainda sim, pode-se ter uma diferença gritante no lucro ao final do dia.
-        
+        ![Lucro Comparativo](imagens/lucro_total_diario_comparativo.png)
+       
 
         quantidade_entregas_bairro.png: Ranking total de volume nos bairros de CURITIBA - PR .
             Embora bairros centrais e populosos como Água Verde e Portão concentrem a maior volumetria absoluta de pedidos devido à alta densidade de restaurantes, eles operam frequentemente com taxas mínimas por causa da curta distância de entrega.
+        ![Quantidade Entregas](imagens/quantidade_entregas_bairro.png)
         
         tempo_medio_entregas_bairro.png: Analise temporal de Minutos gastos para cada entrega de acordo com o bairro
             Regiões como CIC, Batel, Rebouças, Novo Mundo e Capão Raso apresentaram o melhor balanço de faturamento por hora (EPH). Mesmo não sendo colados nos principais hubs de coleta, o valor elevado da taxa dessas regiões somado ao fácil acesso por vias rápidas e avenidas estruturais de Curitiba otimiza o tempo de deslocamento de ida e volta, elevando a margem de lucro.
+        ![Tempo Entregas](imagens/tempo_medio_entregas_bairro.png)
 
         eficiencia_dia_semana.png: Médias de lucro por hora, facilitando o planejamento de escalas.
+        ![Eficiência Diária](imagens/eficiencia_dia_semana.png)
         
         &
 
-        lucro_por_hora_diario.png: Lucro médio de entregas em cada dia de acordo com a meta de lucro/hora 
+        lucro_por_hora_diario.png: Lucro médio de entregas em cada dia de acordo com a meta de lucro/hora
+        ![Lucro Diario](imagens/lucro_por_hora_diario.png)
 
             O faturamento diário atinge seu pico de eficiência majoritariamente às Sextas-feiras e Sábados. Nos demais dias da semana, a oscilação do volume disponível no mercado impacta diretamente a densidade das rotas, exigindo maior tempo de espera entre chamadas.
     
