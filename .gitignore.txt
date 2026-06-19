@@ -1,6 +1,4 @@
 
-# Ignorar o banco de dados SQLite local
+# Ignora o banco de dados SQLite local
 logistica_pessoal.db
 
-# Opcional: Ignorar as imagens geradas (já que o README vai mostrar os exemplos)
-imagens/
