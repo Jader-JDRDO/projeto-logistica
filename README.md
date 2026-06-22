@@ -82,6 +82,8 @@ Conclusão
             O faturamento diário atinge seu pico de eficiência majoritariamente às Sextas-feiras e Sábados. Nos demais dias da semana, a oscilação do volume disponível no mercado impacta diretamente a densidade das rotas, exigindo maior tempo de espera entre chamadas.
     
     Conclusão Geral: O sucesso da operação logística urbana não depende exclusivamente da menor distância linear, mas sim da conectividade do bairro com eixos viários estruturais que mitigam gargalos de tráfego e maximizam o ganho por hora trabalhada.
+Vale ressaltar que as rotas são feitas pelos restaurantes e dependem muito do dia da semana e datas festivas ou significantes, como feriados e pagamentos do mês 
+
     
 
 
